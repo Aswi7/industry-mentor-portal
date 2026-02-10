@@ -11,10 +11,14 @@ app.use(express.json());
 // 2️⃣ Routes
 
 const authRoutes = require("./routes/auth");
-const testRoutes = require("./routes/testRoutes"); // ✅ ADD THIS
+const testRoutes = require("./routes/testRoutes");
+const adminRoutes = require("./routes/adminRoutes");
+const mentorRoutes = require("./routes/mentorRoutes"); // ✅ ADD THIS
 
 app.use("/api/auth", authRoutes);
-app.use("/api/test", testRoutes); // ✅ ADD THIS
+app.use("/api/test", testRoutes);
+app.use("/api/admin", adminRoutes);
+app.use("/api/mentor", mentorRoutes); // ✅ ADD THIS
 
 // 3️⃣ Test route
 app.get("/", (req, res) => {
