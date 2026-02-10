@@ -25,8 +25,14 @@ const registerUser = async (req, res) => {
     });
 
     const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '7d' });
+   const userResponse = user.toObject();
+   delete userResponse.password;
 
-    res.status(201).json({ token, user });
+res.status(201).json({
+  token,
+  user: userResponse
+});
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error" });
@@ -45,7 +51,14 @@ const loginUser = async (req, res) => {
 
     const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '7d' });
 
-    res.status(200).json({ token, user });
+const userResponse = user.toObject();
+delete userResponse.password;
+
+res.status(200).json({
+  token,
+  user: userResponse
+});
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error" });

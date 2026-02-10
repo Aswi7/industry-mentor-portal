@@ -9,8 +9,12 @@ const PORT = 5000;
 app.use(express.json());
 
 // 2️⃣ Routes
+
 const authRoutes = require("./routes/auth");
+const testRoutes = require("./routes/testRoutes"); // ✅ ADD THIS
+
 app.use("/api/auth", authRoutes);
+app.use("/api/test", testRoutes); // ✅ ADD THIS
 
 // 3️⃣ Test route
 app.get("/", (req, res) => {
@@ -20,7 +24,7 @@ app.get("/", (req, res) => {
 // 4️⃣ MongoDB connection
 mongoose
   .connect(process.env.MONGO_URI)
-  .then(() => console.log("✅ MongoDB connected successfully"))
+  .then(() => console.log("MongoDB connected successfully"))
   .catch((err) =>
     console.error("❌ MongoDB connection error:", err.message)
   );
