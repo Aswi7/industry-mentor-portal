@@ -14,13 +14,15 @@ const authRoutes = require("./routes/auth");
 const testRoutes = require("./routes/testRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const mentorRoutes = require("./routes/mentorRoutes");
-const studentRoutes = require("./routes/studentRoutes"); // ✅ ADD THIS
+const studentRoutes = require("./routes/studentRoutes"); 
+const sessionRoutes = require("./routes/sessionRoutes");// ✅ ADD THIS
 
 app.use("/api/auth", authRoutes);
 app.use("/api/test", testRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/mentor", mentorRoutes);
-app.use("/api/student", studentRoutes); // ✅ ADD THIS
+app.use("/api/student", studentRoutes);
+app.use("/api/sessions", sessionRoutes); // ✅ ADD THIS
 
 // 3️⃣ Test route
 app.get("/", (req, res) => {
