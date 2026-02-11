@@ -17,7 +17,7 @@ const sessionSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ["REQUESTED", "APPROVED", "COMPLETED", "CANCELLED"],
+    enum: ["REQUESTED", "ACCEPTED", "REJECTED", "COMPLETED"],
     default: "REQUESTED"
   }
 }, { timestamps: true });
