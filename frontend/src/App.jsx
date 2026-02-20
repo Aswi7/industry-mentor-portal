@@ -3,18 +3,27 @@ import Login from "./pages/Login"
 import Register from "./pages/Register"
 import MentorDashboard from "./pages/MentorDashboard"
 import StudentDashboard from "./pages/StudentDashboard"
-import AdminDashboard from "./pages/AdminDashboard"
+
+import AdminDashboard from "./pages/admin/AdminDashboard"
+import AdminOverview from "./pages/admin/AdminOverview"
+import AdminUsers from "./pages/admin/AdminUsers"
+import AdminSessions from "./pages/admin/AdminSessions"
+
 
 function App() {
   return (
     <Routes>
       <Route path="/" element={<Login />} />
       <Route path="/register" element={<Register />} />
-    
+
       <Route path="/mentor" element={<MentorDashboard />} />
-       <Route path="/student" element={<StudentDashboard />} />
-       <Route path="/admin" element={<AdminDashboard />} />
-    
+      <Route path="/student" element={<StudentDashboard />} />
+
+      <Route path="/admin" element={<AdminDashboard />}>
+        <Route index element={<AdminOverview />} />
+        <Route path="users" element={<AdminUsers />} />
+        <Route path="sessions" element={<AdminSessions />} />
+      </Route>
     </Routes>
   )
 }
