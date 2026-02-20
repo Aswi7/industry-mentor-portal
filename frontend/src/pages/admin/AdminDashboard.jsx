@@ -1,4 +1,5 @@
 import { NavLink, Outlet } from "react-router-dom";
+import { Bell } from "lucide-react";
 
 const AdminDashboard = () => {
   return (
@@ -11,63 +12,40 @@ const AdminDashboard = () => {
         </div>
 
         <div className="flex-1 p-4 space-y-3">
-
-          <NavLink
-            to="/admin"
-            end
+          <NavLink to="/admin" end
             className={({ isActive }) =>
-              `block rounded-lg p-3 ${
-                isActive ? "bg-gray-700" : "hover:bg-gray-700"
-              }`
-            }
-          >
+              `block rounded-lg p-3 ${isActive ? "bg-gray-700" : "hover:bg-gray-700"}`
+            }>
             Overview
           </NavLink>
 
-          <NavLink
-            to="/admin/users"
+          <NavLink to="/admin/users"
             className={({ isActive }) =>
-              `block rounded-lg p-3 ${
-                isActive ? "bg-gray-700" : "hover:bg-gray-700"
-              }`
-            }
-          >
+              `block rounded-lg p-3 ${isActive ? "bg-gray-700" : "hover:bg-gray-700"}`
+            }>
             Users
           </NavLink>
 
-          <NavLink
-            to="/admin/sessions"
+          <NavLink to="/admin/sessions"
             className={({ isActive }) =>
-              `block rounded-lg p-3 ${
-                isActive ? "bg-gray-700" : "hover:bg-gray-700"
-              }`
-            }
-          >
+              `block rounded-lg p-3 ${isActive ? "bg-gray-700" : "hover:bg-gray-700"}`
+            }>
             Sessions
           </NavLink>
 
-          <NavLink
-            to="/admin/approvals"
+          <NavLink to="/admin/approvals"
             className={({ isActive }) =>
-              `block rounded-lg p-3 ${
-                isActive ? "bg-gray-700" : "hover:bg-gray-700"
-              }`
-            }
-          >
+              `block rounded-lg p-3 ${isActive ? "bg-gray-700" : "hover:bg-gray-700"}`
+            }>
             Approvals
           </NavLink>
 
-          <NavLink
-            to="/admin/reports"
+          <NavLink to="/admin/reports"
             className={({ isActive }) =>
-              `block rounded-lg p-3 ${
-                isActive ? "bg-gray-700" : "hover:bg-gray-700"
-              }`
-            }
-          >
+              `block rounded-lg p-3 ${isActive ? "bg-gray-700" : "hover:bg-gray-700"}`
+            }>
             Reports
           </NavLink>
-
         </div>
 
         {/* Profile */}
@@ -84,9 +62,22 @@ const AdminDashboard = () => {
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="flex-1 overflow-y-auto">
-        <Outlet />
+      {/* Right Section */}
+      <div className="flex-1 flex flex-col">
+
+        {/* Top Navbar */}
+        <div className="h-16 bg-white shadow flex items-center justify-end px-6 flex-shrink-0">
+          <Bell className="mr-6 text-gray-600 cursor-pointer" />
+          <div className="bg-blue-500 text-white w-9 h-9 rounded-full flex items-center justify-center">
+            AU
+          </div>
+        </div>
+
+        {/* Page Content (Scrollable) */}
+        <div className="flex-1 overflow-y-auto p-6 pt-4 md:pt-6">
+          <Outlet />
+        </div>
+
       </div>
 
     </div>

@@ -8,6 +8,9 @@ import AdminDashboard from "./pages/admin/AdminDashboard"
 import AdminOverview from "./pages/admin/AdminOverview"
 import AdminUsers from "./pages/admin/AdminUsers"
 import AdminSessions from "./pages/admin/AdminSessions"
+import AdminApprovals from "./pages/admin/AdminApprovals"
+import AdminReports from "./pages/admin/AdminReports"
+
 
 
 function App() {
@@ -23,6 +26,8 @@ function App() {
         <Route index element={<AdminOverview />} />
         <Route path="users" element={<AdminUsers />} />
         <Route path="sessions" element={<AdminSessions />} />
+        <Route path="approvals" element={<AdminApprovals />} />
+        <Route path="reports" element={<AdminReports />} />
       </Route>
     </Routes>
   )

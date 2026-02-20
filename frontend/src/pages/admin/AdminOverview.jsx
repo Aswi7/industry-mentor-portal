@@ -1,25 +1,7 @@
-import {
-  Users,
-  UserCheck,
-  Calendar,
-  BarChart3,
-} from "lucide-react";
+import { Users, UserCheck, Calendar, BarChart3 } from "lucide-react";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
 
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-  Legend,
-} from "recharts";
-
-const AdminOverview = () => {
-
+const Overview = () => {
   const sessionData = [
     { name: "Completed", value: 2 },
     { name: "Upcoming", value: 2 },
@@ -36,22 +18,10 @@ const AdminOverview = () => {
   const COLORS = ["#3B82F6", "#16A34A", "#F59E0B"];
 
   return (
-    <div className="p-8">
-
-      {/* Top Bar */}
-      <div className="flex justify-between items-center mb-8">
-        <div></div>
-        <div className="flex items-center gap-4">
-          🔔
-          <div className="bg-blue-500 text-white w-9 h-9 rounded-full flex items-center justify-center">
-            AU
-          </div>
-        </div>
-      </div>
+    <div className="space-y-6">
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-4 gap-6 mb-8">
-
+      <div className="grid grid-cols-4 gap-6">
         <div className="bg-white p-6 rounded-xl shadow flex items-center gap-4">
           <Users className="text-blue-500" />
           <div>
@@ -83,18 +53,12 @@ const AdminOverview = () => {
             <p className="text-gray-600">Completion Rate</p>
           </div>
         </div>
-
       </div>
 
       {/* Charts */}
       <div className="grid grid-cols-2 gap-6">
-
-        {/* Bar Chart */}
         <div className="bg-white p-6 rounded-xl shadow">
-          <h2 className="text-xl font-semibold mb-4">
-            Session Analytics
-          </h2>
-
+          <h2 className="text-xl font-semibold mb-4">Session Analytics</h2>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={sessionData}>
               <XAxis dataKey="name" />
@@ -105,26 +69,13 @@ const AdminOverview = () => {
           </ResponsiveContainer>
         </div>
 
-        {/* Pie Chart */}
         <div className="bg-white p-6 rounded-xl shadow">
-          <h2 className="text-xl font-semibold mb-4">
-            User Distribution
-          </h2>
-
+          <h2 className="text-xl font-semibold mb-4">User Distribution</h2>
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
-              <Pie
-                data={userData}
-                dataKey="value"
-                nameKey="name"
-                outerRadius={100}
-                label
-              >
+              <Pie data={userData} dataKey="value" nameKey="name" outerRadius={100} label>
                 {userData.map((entry, index) => (
-                  <Cell
-                    key={`cell-${index}`}
-                    fill={COLORS[index % COLORS.length]}
-                  />
+                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Pie>
               <Legend />
@@ -132,11 +83,10 @@ const AdminOverview = () => {
             </PieChart>
           </ResponsiveContainer>
         </div>
-
       </div>
 
     </div>
   );
 };
 
-export default AdminOverview;
+export default Overview;
