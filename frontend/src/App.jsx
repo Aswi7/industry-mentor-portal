@@ -3,7 +3,10 @@ import { Routes, Route } from "react-router-dom"
 import Login from "./pages/Login"
 import Register from "./pages/Register"
 
-import MentorDashboard from "./pages/MentorDashboard"
+import MentorDashboard from "./pages/mentor/MentorDashboard"
+import MentorOverview from "./pages/mentor/MentorOverview"
+import MentorSessions from "./pages/mentor/MentorSessions"
+
 
 import StudentDashboard from "./pages/student/StudentDashboard"
 import StudentSessions from "./pages/student/StudentSessions"
@@ -25,7 +28,15 @@ function App() {
       <Route path="/register" element={<Register />} />
 
       {/* Mentor */}
-      <Route path="/mentor" element={<MentorDashboard />} />
+     {/* Mentor */}
+<Route path="/mentor" element={<MentorDashboard />}>
+  <Route index element={<MentorOverview />} />
+  <Route path="sessions" element={<MentorSessions />} />
+  <Route path="mentees" element={<div>Mentees Page</div>} />
+  <Route path="resources" element={<div>Resources Page</div>} />
+  <Route path="messages" element={<div>Messages Page</div>} />
+</Route>
+  
 
       {/* Student */}
       <Route path="/student" element={<StudentDashboard />}>
