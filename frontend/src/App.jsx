@@ -19,7 +19,8 @@ import AdminUsers from "./pages/admin/AdminUsers"
 import AdminSessions from "./pages/admin/AdminSessions"
 import AdminApprovals from "./pages/admin/AdminApprovals"
 import AdminReports from "./pages/admin/AdminReports"
-import StudentOverview from "./pages/student/StudentOverview";
+import StudentOverview from "./pages/student/StudentOverview"
+import MentorMessages from "./pages/mentor/MentorMessages"
 
 function App() {
   return (
@@ -36,7 +37,7 @@ function App() {
   <Route path="sessions" element={<MentorSessions />} />
   <Route path="mentees" element={<MentorMentees />} />
  <Route path="resources" element={<MentorResources />} />
-  <Route path="messages" element={<div>Messages Page</div>} />
+  <Route path="messages" element={<MentorMessages />} />
 </Route>
   
 
