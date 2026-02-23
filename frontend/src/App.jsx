@@ -6,6 +6,7 @@ import Register from "./pages/Register"
 import MentorDashboard from "./pages/mentor/MentorDashboard"
 import MentorOverview from "./pages/mentor/MentorOverview"
 import MentorSessions from "./pages/mentor/MentorSessions"
+import MentorResources from "./pages/mentor/MentorResources"
 
 
 import StudentDashboard from "./pages/student/StudentDashboard"
@@ -27,13 +28,13 @@ function App() {
       <Route path="/" element={<Login />} />
       <Route path="/register" element={<Register />} />
 
-      {/* Mentor */}
+
      {/* Mentor */}
 <Route path="/mentor" element={<MentorDashboard />}>
   <Route index element={<MentorOverview />} />
   <Route path="sessions" element={<MentorSessions />} />
   <Route path="mentees" element={<div>Mentees Page</div>} />
-  <Route path="resources" element={<div>Resources Page</div>} />
+ <Route path="resources" element={<MentorResources />} />
   <Route path="messages" element={<div>Messages Page</div>} />
 </Route>
   
