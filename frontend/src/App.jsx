@@ -12,6 +12,9 @@ import MentorMentees from "./pages/mentor/MentorMentees"
 
 import StudentDashboard from "./pages/student/StudentDashboard"
 import StudentSessions from "./pages/student/StudentSessions"
+import StudentResources from "./pages/student/StudentResources";
+import StudentMessages from "./pages/student/StudentMessages"
+
 
 import AdminDashboard from "./pages/admin/AdminDashboard"
 import AdminOverview from "./pages/admin/AdminOverview"
@@ -45,9 +48,8 @@ function App() {
       <Route path="/student" element={<StudentDashboard />}>
   <Route index element={<StudentOverview />} />
   <Route path="sessions" element={<StudentSessions />} />
-  <Route path="progress" element={<div>Progress Page</div>} />
-  <Route path="resources" element={<div>Resources Page</div>} />
-  <Route path="messages" element={<div>Messages Page</div>} />
+  <Route path="resources" element={<StudentResources />} />
+  <Route path="messages" element={<StudentMessages />} />
 </Route>
       {/* Admin */}
       <Route path="/admin" element={<AdminDashboard />}>

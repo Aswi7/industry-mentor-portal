@@ -1,95 +1,135 @@
-import { Link2, FileText } from "lucide-react"
+import { BookOpen, FileText, Video, Link as LinkIcon, Search, Filter } from "lucide-react"
 
 export default function MentorResources() {
   return (
-    <div>
-      {/* Title */}
-      <h1 className="text-3xl font-bold text-gray-800">
-        Resources
-      </h1>
-      <p className="text-gray-600 mt-1">
-        Materials shared by your mentors
-      </p>
-
-      {/* Cards */}
-      <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-
-        {/* Card 1 */}
-        <div className="bg-white rounded-xl shadow-sm border p-6 flex justify-between items-center">
-          <div className="flex gap-4 items-start">
-            <div className="bg-blue-100 p-3 rounded-lg">
-              <Link2 className="text-blue-600" size={20} />
-            </div>
-
-            <div>
-              <h2 className="font-semibold text-lg text-gray-800">
-                System Design Primer
-              </h2>
-              <p className="text-gray-600 text-sm mt-1">
-                Comprehensive guide to system design interviews
-              </p>
-              <p className="text-sm text-gray-500 mt-2">
-                By Rajesh Kumar • 2026-02-09
-              </p>
-            </div>
-          </div>
-
-          <button className="bg-gray-800 text-white text-sm px-4 py-2 rounded-full">
-            Link
-          </button>
+    <>
+      {/* Header */}
+      <div className="flex justify-between items-center mb-8">
+        <div>
+          <h1 className="text-3xl font-bold">Resources</h1>
+          <p className="text-gray-500">
+            Manage and share learning materials with your mentees
+          </p>
         </div>
 
-        {/* Card 2 */}
-        <div className="bg-white rounded-xl shadow-sm border p-6 flex justify-between items-center">
-          <div className="flex gap-4 items-start">
-            <div className="bg-blue-100 p-3 rounded-lg">
-              <FileText className="text-blue-600" size={20} />
-            </div>
+        <button className="bg-blue-600 text-white px-6 py-3 rounded-xl flex items-center gap-2 hover:bg-blue-700">
+          + Add Resource
+        </button>
+      </div>
 
-            <div>
-              <h2 className="font-semibold text-lg text-gray-800">
-                DSA Cheat Sheet
-              </h2>
-              <p className="text-gray-600 text-sm mt-1">
-                Quick reference for common algorithms
-              </p>
-              <p className="text-sm text-gray-500 mt-2">
-                By Rajesh Kumar • 2026-02-07
-              </p>
-            </div>
-          </div>
+      {/* Stats Cards */}
+      <div className="grid md:grid-cols-4 gap-6 mb-8">
 
-          <button className="bg-gray-800 text-white text-sm px-4 py-2 rounded-full">
-            Document
-          </button>
-        </div>
-
-        {/* Card 3 */}
-        <div className="bg-white rounded-xl shadow-sm border p-6 flex justify-between items-center">
-          <div className="flex gap-4 items-start">
-            <div className="bg-blue-100 p-3 rounded-lg">
-              <Link2 className="text-blue-600" size={20} />
-            </div>
-
-            <div>
-              <h2 className="font-semibold text-lg text-gray-800">
-                React Best Practices
-              </h2>
-              <p className="text-gray-600 text-sm mt-1">
-                Modern React patterns and hooks
-              </p>
-              <p className="text-sm text-gray-500 mt-2">
-                By Rajesh Kumar • 2026-02-10
-              </p>
-            </div>
-          </div>
-
-          <button className="bg-gray-800 text-white text-sm px-4 py-2 rounded-full">
-            Link
-          </button>
-        </div>
+        <StatCard icon={<BookOpen />} title="3" subtitle="Total" />
+        <StatCard icon={<FileText />} title="1" subtitle="Documents" />
+        <StatCard icon={<Video />} title="0" subtitle="Videos" />
+        <StatCard icon={<LinkIcon />} title="2" subtitle="Links" />
 
       </div>
+
+      {/* Search + Filter */}
+      <div className="flex gap-4 mb-8">
+
+        <div className="flex-1 relative">
+          <Search className="absolute left-4 top-3 text-gray-400" />
+          <input
+            placeholder="Search resources..."
+            className="w-full pl-12 pr-4 py-3 rounded-xl border focus:outline-none"
+          />
+        </div>
+
+        <button className="border px-6 py-3 rounded-xl flex items-center gap-2 bg-white">
+          <Filter size={18} />
+          All Types
+        </button>
+
+      </div>
+
+      {/* Resource Grid */}
+      <div className="grid md:grid-cols-2 gap-6">
+
+        <ResourceCard
+          type="Link"
+          title="System Design Primer"
+          desc="Comprehensive guide to system design interviews"
+          author="Arjun Sharma"
+          date="2026-02-09"
+          tagColor="green"
+        />
+
+        <ResourceCard
+          type="Document"
+          title="DSA Cheat Sheet"
+          desc="Quick reference for common algorithms"
+          author="Arjun Sharma, Priya Patel"
+          date="2026-02-07"
+          tagColor="blue"
+        />
+
+        <ResourceCard
+          type="Link"
+          title="React Best Practices"
+          desc="Modern React patterns and hooks"
+          author="Rajesh Kumar"
+          date="2026-02-10"
+          tagColor="green"
+        />
+
+      </div>
+    </>
+  )
+}
+
+function StatCard({ icon, title, subtitle }) {
+  return (
+    <div className="bg-white p-6 rounded-xl shadow-sm flex items-center gap-4">
+      <div className="bg-gray-100 p-3 rounded-lg text-gray-500">
+        {icon}
+      </div>
+
+      <div>
+        <p className="text-2xl font-bold">{title}</p>
+        <p className="text-gray-500">{subtitle}</p>
+      </div>
+    </div>
+  )
+}
+
+function ResourceCard({ title, desc, author, date, type, tagColor }) {
+
+  const tagStyles = {
+    green: "bg-green-100 text-green-600",
+    blue: "bg-blue-100 text-blue-600",
+    purple: "bg-purple-100 text-purple-600"
+  }
+
+  return (
+    <div className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition">
+
+      <div className="flex justify-between items-start mb-4">
+        <div>
+          <div className="flex items-center gap-3">
+            <div className="bg-green-100 p-2 rounded-lg">
+              <LinkIcon className="text-green-600" />
+            </div>
+
+            <div>
+              <h3 className="font-semibold text-lg">{title}</h3>
+              <p className="text-gray-500 text-sm">{desc}</p>
+            </div>
+          </div>
+        </div>
+
+        <span className={`${tagStyles[tagColor]} px-3 py-1 rounded-full text-sm`}>
+          {type}
+        </span>
+      </div>
+
+      <div className="flex justify-between text-sm text-gray-500">
+        <p>{author}</p>
+        <p>{date}</p>
+      </div>
+
     </div>
   )
 }
