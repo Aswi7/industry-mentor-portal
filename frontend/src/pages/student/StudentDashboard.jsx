@@ -32,9 +32,6 @@ const StudentDashboard = () => {
             Sessions
           </NavLink>
 
-          <NavLink to="progress" className="block rounded-lg p-3 hover:bg-gray-700">
-            Progress
-          </NavLink>
 
           <NavLink to="resources" className="block rounded-lg p-3 hover:bg-gray-700">
             Resources

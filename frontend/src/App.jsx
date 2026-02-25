@@ -13,7 +13,6 @@ import MentorMentees from "./pages/mentor/MentorMentees"
 import StudentDashboard from "./pages/student/StudentDashboard"
 import StudentSessions from "./pages/student/StudentSessions"
 import StudentResources from "./pages/student/StudentResources";
-import StudentMessages from "./pages/student/StudentMessages"
 
 
 import AdminDashboard from "./pages/admin/AdminDashboard"
@@ -23,7 +22,6 @@ import AdminSessions from "./pages/admin/AdminSessions"
 import AdminApprovals from "./pages/admin/AdminApprovals"
 import AdminReports from "./pages/admin/AdminReports"
 import StudentOverview from "./pages/student/StudentOverview"
-import MentorMessages from "./pages/mentor/MentorMessages"
 
 function App() {
   return (
@@ -40,7 +38,6 @@ function App() {
   <Route path="sessions" element={<MentorSessions />} />
   <Route path="mentees" element={<MentorMentees />} />
  <Route path="resources" element={<MentorResources />} />
-  <Route path="messages" element={<MentorMessages />} />
 </Route>
   
 
@@ -49,7 +46,6 @@ function App() {
   <Route index element={<StudentOverview />} />
   <Route path="sessions" element={<StudentSessions />} />
   <Route path="resources" element={<StudentResources />} />
-  <Route path="messages" element={<StudentMessages />} />
 </Route>
       {/* Admin */}
       <Route path="/admin" element={<AdminDashboard />}>
