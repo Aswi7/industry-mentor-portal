@@ -7,42 +7,66 @@ const StudentDashboard = () => {
       {/* Sidebar */}
       <div className="w-64 bg-[#0B1F3A] text-white flex flex-col">
 
+        {/* Logo */}
         <div className="p-6 text-xl font-bold border-b border-gray-700">
           🎓 MentorConnect
         </div>
 
+        {/* Menu */}
         <div className="flex-1 p-4 space-y-3">
 
+          {/* Overview */}
           <NavLink
             to=""
             end
             className={({ isActive }) =>
-              `block rounded-lg p-3 ${isActive ? "bg-gray-700" : "hover:bg-gray-700"}`
+              `block rounded-lg p-3 ${
+                isActive ? "bg-gray-700" : "hover:bg-gray-700"
+              }`
             }
           >
             Overview
           </NavLink>
 
+          {/* Sessions */}
           <NavLink
             to="sessions"
             className={({ isActive }) =>
-              `block rounded-lg p-3 ${isActive ? "bg-gray-700" : "hover:bg-gray-700"}`
+              `block rounded-lg p-3 ${
+                isActive ? "bg-gray-700" : "hover:bg-gray-700"
+              }`
             }
           >
             Sessions
           </NavLink>
 
-
-          <NavLink to="resources" className="block rounded-lg p-3 hover:bg-gray-700">
+          {/* Resources */}
+          <NavLink
+            to="resources"
+            className={({ isActive }) =>
+              `block rounded-lg p-3 ${
+                isActive ? "bg-gray-700" : "hover:bg-gray-700"
+              }`
+            }
+          >
             Resources
           </NavLink>
 
-          <NavLink to="messages" className="block rounded-lg p-3 hover:bg-gray-700">
-            Messages
+          {/* Find Mentor (NEW) */}
+          <NavLink
+            to="find-mentor"
+            className={({ isActive }) =>
+              `block rounded-lg p-3 ${
+                isActive ? "bg-gray-700" : "hover:bg-gray-700"
+              }`
+            }
+          >
+            Find Mentor
           </NavLink>
 
         </div>
 
+        {/* User Info */}
         <div className="p-4 border-t border-gray-700">
           <p className="font-semibold">Arjun Sharma</p>
           <p className="text-sm text-gray-300">Student</p>

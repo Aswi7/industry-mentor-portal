@@ -13,6 +13,7 @@ import MentorMentees from "./pages/mentor/MentorMentees"
 import StudentDashboard from "./pages/student/StudentDashboard"
 import StudentSessions from "./pages/student/StudentSessions"
 import StudentResources from "./pages/student/StudentResources";
+import FindMentor from "./pages/student/FindMentor"
 
 
 import AdminDashboard from "./pages/admin/AdminDashboard"
@@ -42,10 +43,11 @@ function App() {
   
 
       {/* Student */}
-      <Route path="/student" element={<StudentDashboard />}>
+<Route path="/student" element={<StudentDashboard />}>
   <Route index element={<StudentOverview />} />
   <Route path="sessions" element={<StudentSessions />} />
   <Route path="resources" element={<StudentResources />} />
+  <Route path="find-mentor" element={<FindMentor />} />
 </Route>
       {/* Admin */}
       <Route path="/admin" element={<AdminDashboard />}>
