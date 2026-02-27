@@ -1,27 +1,19 @@
-import mongoose from "mongoose";
+const mongoose = require("mongoose");
 
-const resourceSchema = new mongoose.Schema(
-  {
-    title: {
-      type: String,
-      required: true,
-    },
-    description: {
-      type: String,
-    },
-    fileUrl: {
-      type: String, // store uploaded file path
-    },
-    link: {
-      type: String, // optional if external link
-    },
-    mentor: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
+const resourceSchema = new mongoose.Schema({
+  title: {
+    type: String,
+    required: true
   },
-  { timestamps: true }
-);
+  description: String,
+  fileUrl: String,
+  link: String,
+  mentor: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User"
+  }
+});
 
-export default mongoose.model("Resource", resourceSchema);
+const Resource = mongoose.model("Resource", resourceSchema);
+
+module.exports = Resource;
