@@ -1,32 +1,27 @@
+import { useEffect, useState } from "react"
+import axios from "axios"
+
 const StudentResources = () => {
 
-  const resources = [
-    {
-      title: "System Design Primer",
-      desc: "Comprehensive guide to system design interviews",
-      author: "Rajesh Kumar",
-      date: "2026-02-09",
-      type: "Link"
-    },
-    {
-      title: "DSA Cheat Sheet",
-      desc: "Quick reference for common algorithms",
-      author: "Rajesh Kumar",
-      date: "2026-02-07",
-      type: "Document"
-    },
-    {
-      title: "React Best Practices",
-      desc: "Modern React patterns and hooks",
-      author: "Rajesh Kumar",
-      date: "2026-02-10",
-      type: "Link"
+  const [resources, setResources] = useState([])
+  const token = localStorage.getItem("token")
+
+  useEffect(() => {
+    const fetchResources = async () => {
+      const { data } = await axios.get(
+        "http://localhost:5000/api/resources",
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      )
+      setResources(data)
     }
-  ];
+
+    fetchResources()
+  }, [])
 
   return (
     <div>
-      {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold">Resources</h1>
         <p className="text-gray-500">
@@ -34,35 +29,49 @@ const StudentResources = () => {
         </p>
       </div>
 
-      {/* Resource Cards */}
       <div className="grid md:grid-cols-2 gap-6">
+        {resources.length === 0 ? (
+          <p>No resources available</p>
+        ) : (
+          resources.map((res) => (
+            <div
+              key={res._id}
+              className="bg-white p-6 rounded-xl shadow-sm"
+            >
+              <h2 className="text-xl font-semibold">
+                {res.title}
+              </h2>
 
-        {resources.map((res, index) => (
-          <div
-            key={index}
-            className="bg-white p-6 rounded-xl shadow-sm"
-          >
-            <h2 className="text-xl font-semibold">
-              {res.title}
-            </h2>
+              <p className="text-gray-500 text-sm mt-1">
+                {res.description}
+              </p>
 
-            <p className="text-gray-500 text-sm mt-1">
-              {res.desc}
-            </p>
+              <div className="flex justify-between mt-4 text-sm text-gray-500">
+                <span>By {res.mentor?.name}</span>
+                <span>
+                  {new Date(res.createdAt).toLocaleDateString()}
+                </span>
+                <span className="bg-green-100 text-green-600 px-3 py-1 rounded-full">
+                  {res.type}
+                </span>
+              </div>
 
-            <div className="flex justify-between mt-4 text-sm text-gray-500">
-              <span>By {res.author}</span>
-              <span>{res.date}</span>
-              <span className="bg-green-100 text-green-600 px-3 py-1 rounded-full">
-                {res.type}
-              </span>
+              {res.fileUrl && (
+                <a
+                  href={`http://localhost:5000${res.fileUrl}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-blue-600 underline mt-2 block"
+                >
+                  Download
+                </a>
+              )}
             </div>
-          </div>
-        ))}
-
+          ))
+        )}
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default StudentResources;
+export default StudentResources
