@@ -1,6 +1,8 @@
 const cors = require("cors");
 const express = require("express");
 const mongoose = require("mongoose");
+const path = require("path");
+
 require("dotenv").config();
 
 const app = express();
@@ -17,14 +19,19 @@ const testRoutes = require("./routes/testRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const mentorRoutes = require("./routes/mentorRoutes");
 const studentRoutes = require("./routes/studentRoutes"); 
-const sessionRoutes = require("./routes/sessionRoutes");// ✅ ADD THIS
+const sessionRoutes = require("./routes/sessionRoutes");
+const resourceRoutes = require("./routes/resourceRoutes");
+// ✅ ADD THIS
 
 app.use("/api/auth", authRoutes);
 app.use("/api/test", testRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/mentor", mentorRoutes);
 app.use("/api/student", studentRoutes);
-app.use("/api/sessions", sessionRoutes); // ✅ ADD THIS
+app.use("/api/sessions", sessionRoutes);
+app.use("/api/resources", resourceRoutes);
+
+app.use("/uploads", express.static("uploads")); // ✅ ADD THIS
 
 // 3️⃣ Test route
 app.get("/", (req, res) => {
