@@ -4,6 +4,7 @@ const { protect, studentOnly } = require("../middleware/authMiddleware");
 const { 
   searchMentors,
   getStudentProfile,
+  updateStudentProfile,
   getStudentStats,
   getStudentSessions,
   getStudentMentors
@@ -14,6 +15,9 @@ router.get("/mentors", protect, studentOnly, searchMentors);
 
 // GET student profile
 router.get("/profile", protect, studentOnly, getStudentProfile);
+
+// PUT update student profile
+router.put("/profile", protect, studentOnly, updateStudentProfile);
 
 // GET student dashboard stats
 router.get("/stats", protect, studentOnly, getStudentStats);

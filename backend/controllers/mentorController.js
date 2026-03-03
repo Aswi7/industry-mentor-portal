@@ -96,7 +96,7 @@ const getMentorMentees = async (req, res) => {
     const mentorId = req.user.id;
 
     const sessions = await Session.find({ mentor: mentorId, status: { $in: ["ACCEPTED", "COMPLETED"] } })
-      .populate("student", "name email skills domain bio");
+      .populate("student", "name email studentSkills studentDomain bio");
 
     // Get unique mentees
     const menteeMap = new Map();

@@ -32,6 +32,13 @@ const userSchema = new mongoose.Schema({
   domain: {
     type: String, // Mentor domain
   },
+  // Only for students
+  studentSkills: {
+    type: [String], // Array of skills student wants to learn/improve
+  },
+  studentDomain: {
+    type: String, // Student's area of interest
+  },
   mentorStatus: {
     type: String,
     enum: mentorStatus,

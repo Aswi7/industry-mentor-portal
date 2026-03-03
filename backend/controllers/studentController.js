@@ -39,6 +39,31 @@ const getStudentProfile = async (req, res) => {
   }
 };
 
+// Update student profile
+const updateStudentProfile = async (req, res) => {
+  try {
+    const student = await User.findById(req.user.id);
+    if (!student) return res.status(404).json({ message: "Student not found" });
+
+    const { studentSkills, studentDomain, bio, profilePicture } = req.body;
+
+    if (studentSkills) student.studentSkills = studentSkills;
+    if (studentDomain) student.studentDomain = studentDomain;
+    if (bio) student.bio = bio;
+    if (profilePicture) student.profilePicture = profilePicture;
+
+    await student.save();
+
+    const studentResponse = student.toObject();
+    delete studentResponse.password;
+
+    res.status(200).json({ student: studentResponse });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 // Get student dashboard stats
 const getStudentStats = async (req, res) => {
   try {
@@ -118,6 +143,7 @@ const getStudentMentors = async (req, res) => {
 module.exports = { 
   searchMentors,
   getStudentProfile,
+  updateStudentProfile,
   getStudentStats,
   getStudentSessions,
   getStudentMentors
