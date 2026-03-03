@@ -1,11 +1,13 @@
 import { Calendar, Clock, Users, Plus } from "lucide-react";
 import { useState, useEffect } from "react";
 import axios from "axios";
+import CreateSessionModal from "../student/CreateSessionModal";
 
 const MentorSessions = () => {
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     const fetchSessions = async () => {
@@ -59,10 +61,23 @@ const MentorSessions = () => {
           </p>
         </div>
 
-        <button className="flex items-center gap-2 bg-blue-600 text-white px-5 py-3 rounded-lg hover:bg-blue-700 transition">
+        <button
+          onClick={() => setShowModal(true)}
+          className="flex items-center gap-2 bg-blue-600 text-white px-5 py-3 rounded-lg hover:bg-blue-700 transition"
+        >
           <Plus size={18} />
           Create Session
         </button>
+        {showModal && (
+          <CreateSessionModal
+            onClose={() => setShowModal(false)}
+            onCreate={(data) => {
+              // currently just log, could call API later
+              console.log("Creating mentor session with", data);
+              // TODO: call backend when endpoint exists
+            }}
+          />
+        )}
       </div>
 
       {/* Section Title */}
