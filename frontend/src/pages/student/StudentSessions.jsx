@@ -24,6 +24,14 @@ const StudentSessions = () => {
     };
 
     fetchSessions();
+
+    const listener = () => {
+      setLoading(true);
+      fetchSessions();
+    };
+
+    window.addEventListener('sessionChanged', listener);
+    return () => window.removeEventListener('sessionChanged', listener);
   }, []);
 
   const getStatusStyle = (status) => {
