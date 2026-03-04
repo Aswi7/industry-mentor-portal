@@ -7,6 +7,7 @@ const {
   requestSession, 
   acceptSession, 
   rejectSession, 
+  cancelSession,
   getMentorSessions, 
   completeSession
 } = require("../controllers/sessionController");
@@ -17,6 +18,9 @@ router.post("/request", protect, studentOnly, requestSession);
 
 // Mentor accepts session
 router.put("/accept/:sessionId", protect, mentorOnly, acceptSession);
+
+// Student cancels their own pending request
+router.delete("/cancel/:sessionId", protect, studentOnly, cancelSession);
 
 // Mentor rejects session
 router.put("/reject/:sessionId", protect, mentorOnly, rejectSession);
