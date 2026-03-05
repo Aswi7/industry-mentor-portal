@@ -8,23 +8,33 @@ const MentorSessions = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [students, setStudents] = useState([]);
+
+  const fetchSessions = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const headers = { Authorization: `Bearer ${token}` };
+
+      const res = await axios.get("http://localhost:5000/api/mentor/sessions", { headers });
+      const allSessions = res.data.sessions || [];
+      setSessions(allSessions);
+
+      const studentMap = new Map();
+      allSessions.forEach((session) => {
+        if (session.student?._id && !studentMap.has(session.student._id)) {
+          studentMap.set(session.student._id, session.student);
+        }
+      });
+      setStudents(Array.from(studentMap.values()));
+      setLoading(false);
+    } catch (err) {
+      console.error(err);
+      setError("Failed to load sessions");
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchSessions = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const headers = { Authorization: `Bearer ${token}` };
-
-        const res = await axios.get("http://localhost:5000/api/mentor/sessions", { headers });
-        setSessions(res.data.sessions);
-        setLoading(false);
-      } catch (err) {
-        console.error(err);
-        setError("Failed to load sessions");
-        setLoading(false);
-      }
-    };
-
     fetchSessions();
   }, []);
 
@@ -32,14 +42,11 @@ const MentorSessions = () => {
     try {
       const token = localStorage.getItem("token");
       const headers = { Authorization: `Bearer ${token}` };
-
-      await axios.put(`http://localhost:5000/api/sessions/${sessionId}`, {
-        status: newStatus
-      }, { headers });
+      const action = newStatus === "ACCEPTED" ? "accept" : "reject";
+      await axios.put(`http://localhost:5000/api/sessions/${action}/${sessionId}`, {}, { headers });
 
       // Refresh sessions
-      const res = await axios.get("http://localhost:5000/api/mentor/sessions", { headers });
-      setSessions(res.data.sessions);
+      await fetchSessions();
     } catch (err) {
       console.error(err);
     }
@@ -71,10 +78,23 @@ const MentorSessions = () => {
         {showModal && (
           <CreateSessionModal
             onClose={() => setShowModal(false)}
-            onCreate={(data) => {
-              // currently just log, could call API later
-              console.log("Creating mentor session with", data);
-              // TODO: call backend when endpoint exists
+            students={students}
+            onCreate={async (data) => {
+              try {
+                const token = localStorage.getItem("token");
+                const headers = { Authorization: `Bearer ${token}` };
+                await axios.post(
+                  "http://localhost:5000/api/sessions/mentor-create",
+                  { studentId: data.studentId, topic: data.title },
+                  { headers }
+                );
+                alert("Session created successfully!");
+                setShowModal(false);
+                await fetchSessions();
+              } catch (err) {
+                console.error(err);
+                alert(err.response?.data?.message || "Failed to create session");
+              }
             }}
           />
         )}

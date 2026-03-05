@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { X, Calendar, Clock } from "lucide-react";
 
-const CreateSessionModal = ({ onClose, onCreate }) => {
+const CreateSessionModal = ({ onClose, onCreate, students = [] }) => {
   // form state
+  const [studentId, setStudentId] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [date, setDate] = useState("");
@@ -13,9 +14,10 @@ const CreateSessionModal = ({ onClose, onCreate }) => {
   const [skillInput, setSkillInput] = useState("");
   const [skills, setSkills] = useState([]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const sessionData = {
+      studentId,
       title,
       description,
       skills,
@@ -25,7 +27,10 @@ const CreateSessionModal = ({ onClose, onCreate }) => {
       maxStudents,
       type,
     };
-    if (onCreate) onCreate(sessionData);
+    if (onCreate) {
+      await onCreate(sessionData);
+      return;
+    }
     onClose();
   };
 
@@ -58,6 +63,25 @@ const CreateSessionModal = ({ onClose, onCreate }) => {
           </button>
         </div>
         <form onSubmit={handleSubmit} className="space-y-6">
+          {students.length > 0 && (
+            <div>
+              <label className="block text-sm font-medium">Student *</label>
+              <select
+                value={studentId}
+                onChange={(e) => setStudentId(e.target.value)}
+                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                required
+              >
+                <option value="">Select a student</option>
+                {students.map((student) => (
+                  <option key={student._id} value={student._id}>
+                    {student.name} ({student.email})
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
           <div>
             <label className="block text-sm font-medium">Session Title *</label>
             <input

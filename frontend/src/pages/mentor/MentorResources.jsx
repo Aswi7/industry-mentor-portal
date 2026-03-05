@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import axios from "axios"
-import { BookOpen, FileText, Video, Link as LinkIcon, Search } from "lucide-react"
+import { BookOpen, FileText, Video, Link as LinkIcon, Trash2 } from "lucide-react"
 
 export default function MentorResources() {
 
@@ -64,6 +64,8 @@ export default function MentorResources() {
         }
       )
 
+      alert(`${type} uploaded successfully!`)
+
       /* Reset form */
       setTitle("")
       setDesc("")
@@ -74,10 +76,28 @@ export default function MentorResources() {
 
     } catch (err) {
       console.error(err)
+      alert("Failed to upload resource")
     } finally {
       setLoading(false)
     }
   }
+
+  const handleDelete = async (resourceId) => {
+    try {
+      const confirmed = window.confirm("Delete this resource?");
+      if (!confirmed) return;
+
+      await axios.delete(`http://localhost:5000/api/resources/${resourceId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      setResources((prev) => prev.filter((item) => item._id !== resourceId));
+      alert("Resource deleted successfully!");
+    } catch (err) {
+      console.error(err);
+      alert(err.response?.data?.message || "Failed to delete resource");
+    }
+  };
 
   /* ---------------- Stats Logic ---------------- */
 
@@ -160,7 +180,11 @@ export default function MentorResources() {
       <div className="grid md:grid-cols-2 gap-6">
 
         {resources.map(resource => (
-          <ResourceCard key={resource._id} resource={resource} />
+          <ResourceCard
+            key={resource._id}
+            resource={resource}
+            onDelete={handleDelete}
+          />
         ))}
 
       </div>
@@ -186,7 +210,7 @@ function StatCard({ icon, title, subtitle }) {
   )
 }
 
-function ResourceCard({ resource }) {
+function ResourceCard({ resource, onDelete }) {
 
   const openResource = () => {
     if (resource.fileUrl) {
@@ -231,6 +255,18 @@ function ResourceCard({ resource }) {
             : "No Date"}
         </p>
       </div>
+
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          onDelete(resource._id);
+        }}
+        className="mt-4 inline-flex items-center gap-2 text-red-600 hover:text-red-700 font-medium"
+      >
+        <Trash2 size={16} />
+        Delete Resource
+      </button>
 
     </div>
   )

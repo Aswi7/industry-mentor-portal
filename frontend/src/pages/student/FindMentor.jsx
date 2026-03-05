@@ -81,17 +81,12 @@ export default function FindMentor() {
             const res = await axios.get("http://localhost:5000/api/student/sessions", { headers: { Authorization: `Bearer ${tokenInner}` } })
             const sessions = res.data.sessions || []
 
-            const match = sessions.find(s => s.mentor._id === mentorId && s.topic === `Mentorship with ${mentorName}`)
-            if (!match) {
-              // no matching session found; re-enable
-              clearInterval(pollingRefsRef.current[mentorId])
-              delete pollingRefsRef.current[mentorId]
-              setRequestedMap(prev => ({ ...prev, [mentorId]: { pending: false } }))
-              return
-            }
+            const stillRequestedForMentor = sessions.some(
+              (s) => s.mentor?._id === mentorId && s.status === "REQUESTED"
+            )
 
-            if (match.status !== "REQUESTED") {
-              // mentor has acted; re-enable button
+            if (!stillRequestedForMentor) {
+              // mentor has acted (or request was removed); re-enable button
               clearInterval(pollingRefsRef.current[mentorId])
               delete pollingRefsRef.current[mentorId]
               setRequestedMap(prev => ({ ...prev, [mentorId]: { pending: false } }))
@@ -167,8 +162,8 @@ export default function FindMentor() {
       }
       setRequestedMap(prev => ({ ...prev, [mentorId]: { pending: false } }));
       alert("Session request cancelled");
-+      // notify other components (like a sessions list) that a change occurred
-+      window.dispatchEvent(new Event('sessionChanged'));
+      // notify other components (like a sessions list) that a change occurred
+      window.dispatchEvent(new Event('sessionChanged'));
     } catch (err) {
       console.error("cancel error", err);
       const status = err.response?.status;

@@ -6,6 +6,50 @@ const StudentResources = () => {
   const [resources, setResources] = useState([])
   const token = localStorage.getItem("token")
 
+  const getDownloadName = (resource, headers = {}) => {
+    const contentDisposition = headers["content-disposition"] || headers["Content-Disposition"];
+    const headerMatch = contentDisposition?.match(/filename="?([^"]+)"?/i);
+    if (headerMatch?.[1]) return headerMatch[1];
+
+    const extMatch = resource.fileUrl?.match(/(\.[a-zA-Z0-9]+)$/);
+    const ext = extMatch ? extMatch[1] : "";
+    const safeTitle = (resource.title || "resource").replace(/[\\/:*?"<>|]/g, "_");
+    return `${safeTitle}${ext}`;
+  };
+
+  const handleDownload = async (resource) => {
+    try {
+      if (!resource.fileUrl) {
+        if (resource.link) {
+          window.open(resource.link, "_blank");
+        } else {
+          alert("No downloadable file for this resource");
+        }
+        return;
+      }
+
+      const response = await axios.get(
+        `http://localhost:5000/api/resources/${resource._id}/download`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+          responseType: "blob"
+        }
+      );
+
+      const blobUrl = window.URL.createObjectURL(new Blob([response.data]));
+      const a = document.createElement("a");
+      a.href = blobUrl;
+      a.download = getDownloadName(resource, response.headers);
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (err) {
+      console.error(err);
+      alert(err.response?.data?.message || "Failed to download resource");
+    }
+  };
+
   useEffect(() => {
     const fetchResources = async () => {
       const { data } = await axios.get(
@@ -56,16 +100,13 @@ const StudentResources = () => {
                 </span>
               </div>
 
-              {res.fileUrl && (
-                <a
-                  href={`http://localhost:5000${res.fileUrl}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-blue-600 underline mt-2 block"
-                >
-                  Download
-                </a>
-              )}
+              <button
+                type="button"
+                onClick={() => handleDownload(res)}
+                className="text-blue-600 underline mt-2 block"
+              >
+                {res.fileUrl ? "Download" : "Open Link"}
+              </button>
             </div>
           ))
         )}
