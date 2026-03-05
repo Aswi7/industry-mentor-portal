@@ -1,4 +1,5 @@
 const Session = require("../models/Session");
+const User = require("../models/User");
 
 const requestSession = async (req, res) => {
   try {
@@ -27,6 +28,34 @@ const requestSession = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error" });
+  }
+};
+
+// MENTOR CREATES SESSION FOR A STUDENT
+const createSessionByMentor = async (req, res) => {
+  try {
+    const { studentId, topic } = req.body;
+
+    if (!studentId || !topic) {
+      return res.status(400).json({ message: "studentId and topic are required" });
+    }
+
+    const student = await User.findById(studentId);
+    if (!student || student.role !== "STUDENT") {
+      return res.status(404).json({ message: "Student not found" });
+    }
+
+    const session = await Session.create({
+      student: studentId,
+      mentor: req.user.id,
+      topic,
+      status: "ACCEPTED"
+    });
+
+    return res.status(201).json({ message: "Session created", session });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -161,6 +190,7 @@ const completeSession = async (req, res) => {
 
 // EXPORT ALL
 module.exports = {
+  createSessionByMentor,
   requestSession,
   acceptSession,
   rejectSession,

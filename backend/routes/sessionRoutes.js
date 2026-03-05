@@ -4,6 +4,7 @@ const router = express.Router();
 const { protect, studentOnly, mentorOnly } = require("../middleware/authMiddleware");
 
 const { 
+  createSessionByMentor,
   requestSession, 
   acceptSession, 
   rejectSession, 
@@ -15,6 +16,9 @@ const {
 
 // Student requests session
 router.post("/request", protect, studentOnly, requestSession);
+
+// Mentor creates session for a student
+router.post("/mentor-create", protect, mentorOnly, createSessionByMentor);
 
 // Mentor accepts session
 router.put("/accept/:sessionId", protect, mentorOnly, acceptSession);
