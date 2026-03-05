@@ -4,7 +4,8 @@ const sessionSchema = new mongoose.Schema({
   student: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
-    required: true
+    required: false,
+    default: null
   },
   mentor: {
     type: mongoose.Schema.Types.ObjectId,
@@ -17,8 +18,8 @@ const sessionSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ["REQUESTED", "ACCEPTED", "REJECTED", "COMPLETED"],
-    default: "REQUESTED"
+    enum: ["OPEN", "REQUESTED", "ACCEPTED", "REJECTED", "COMPLETED"],
+    default: "OPEN"
   }
 }, { timestamps: true });
 

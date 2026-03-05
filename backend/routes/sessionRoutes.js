@@ -10,6 +10,7 @@ const {
   rejectSession, 
   cancelSession,
   getMentorSessions, 
+  getOpenSessionsForStudents,
   completeSession
 } = require("../controllers/sessionController");
 
@@ -17,8 +18,11 @@ const {
 // Student requests session
 router.post("/request", protect, studentOnly, requestSession);
 
-// Mentor creates session for a student
+// Mentor creates open session
 router.post("/mentor-create", protect, mentorOnly, createSessionByMentor);
+
+// Students view all open sessions created by mentors
+router.get("/open", protect, studentOnly, getOpenSessionsForStudents);
 
 // Mentor accepts session
 router.put("/accept/:sessionId", protect, mentorOnly, acceptSession);

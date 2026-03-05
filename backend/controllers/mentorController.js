@@ -46,7 +46,11 @@ const getMentorStats = async (req, res) => {
     const allSessions = await Session.find({ mentor: mentorId }).populate("student", "name email");
 
     // Count mentees (unique students)
-    const menteeIds = new Set(allSessions.map(s => s.student._id.toString()));
+    const menteeIds = new Set(
+      allSessions
+        .filter((s) => s.student)
+        .map((s) => s.student._id.toString())
+    );
     const menteesCount = menteeIds.size;
 
     // Count upcoming sessions (REQUESTED and ACCEPTED)
@@ -101,6 +105,7 @@ const getMentorMentees = async (req, res) => {
     // Get unique mentees
     const menteeMap = new Map();
     sessions.forEach(session => {
+      if (!session.student) return;
       menteeMap.set(session.student._id.toString(), session.student);
     });
 

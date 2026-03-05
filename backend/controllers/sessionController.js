@@ -1,11 +1,31 @@
 const Session = require("../models/Session");
-const User = require("../models/User");
 
 const requestSession = async (req, res) => {
   try {
-    const { mentorId, topic } = req.body;
+    const { sessionId, mentorId, topic } = req.body;
 
-    // Prevent duplicate requests from the same student to the same mentor for the same topic
+    if (sessionId) {
+      const session = await Session.findById(sessionId);
+      if (!session) {
+        return res.status(404).json({ message: "Session not found" });
+      }
+
+      if (session.status !== "OPEN") {
+        return res.status(400).json({ message: "This session is no longer open" });
+      }
+
+      session.student = req.user.id;
+      session.status = "REQUESTED";
+      await session.save();
+
+      return res.status(201).json({ message: "Session requested", session });
+    }
+
+    // Backward-compatible flow: request directly from a mentor card
+    if (!mentorId || !topic) {
+      return res.status(400).json({ message: "sessionId or mentorId+topic is required" });
+    }
+
     const existing = await Session.findOne({
       student: req.user.id,
       mentor: mentorId,
@@ -24,35 +44,29 @@ const requestSession = async (req, res) => {
       status: "REQUESTED"
     });
 
-    res.status(201).json({ message: "Session requested", session });
+    return res.status(201).json({ message: "Session requested", session });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error" });
   }
 };
 
-// MENTOR CREATES SESSION FOR A STUDENT
+// Mentor creates an open session
 const createSessionByMentor = async (req, res) => {
   try {
-    const { studentId, topic } = req.body;
+    const { topic } = req.body;
 
-    if (!studentId || !topic) {
-      return res.status(400).json({ message: "studentId and topic are required" });
-    }
-
-    const student = await User.findById(studentId);
-    if (!student || student.role !== "STUDENT") {
-      return res.status(404).json({ message: "Student not found" });
+    if (!topic) {
+      return res.status(400).json({ message: "topic is required" });
     }
 
     const session = await Session.create({
-      student: studentId,
       mentor: req.user.id,
       topic,
-      status: "ACCEPTED"
+      status: "OPEN"
     });
 
-    return res.status(201).json({ message: "Session created", session });
+    return res.status(201).json({ message: "Open session created", session });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: "Server error" });
@@ -70,18 +84,15 @@ const cancelSession = async (req, res) => {
     if (!session)
       return res.status(404).json({ message: "Session not found" });
 
-    if (session.student.toString() !== req.user.id)
+    if (!session.student || session.student.toString() !== req.user.id)
       return res.status(403).json({ message: "Not authorized" });
 
     if (session.status !== "REQUESTED")
       return res.status(400).json({ message: "Only requested sessions can be canceled" });
 
-    // delete any stray pending sessions for this student/mentor
-    await Session.deleteMany({
-      student: req.user.id,
-      mentor: session.mentor,
-      status: "REQUESTED"
-    });
+    session.student = null;
+    session.status = "OPEN";
+    await session.save();
 
     res.status(200).json({ message: "Session request canceled" });
   } catch (err) {
@@ -100,6 +111,10 @@ const acceptSession = async (req, res) => {
 
     if (session.mentor.toString() !== req.user.id)
       return res.status(403).json({ message: "Not authorized" });
+
+    if (session.status !== "REQUESTED" || !session.student) {
+      return res.status(400).json({ message: "Only requested student sessions can be accepted" });
+    }
 
     session.status = "ACCEPTED";
     await session.save();
@@ -123,6 +138,10 @@ const rejectSession = async (req, res) => {
 
     if (session.mentor.toString() !== req.user.id)
       return res.status(403).json({ message: "Not authorized" });
+
+    if (session.status !== "REQUESTED" || !session.student) {
+      return res.status(400).json({ message: "Only requested student sessions can be rejected" });
+    }
 
     session.status = "REJECTED";
     await session.save();
@@ -153,6 +172,19 @@ const getStudentSessions = async (req, res) => {
     const sessions = await Session.find({ student: req.user.id })
       .populate("mentor", "name email")
       .populate("student", "name email");
+
+    res.status(200).json({ sessions });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+const getOpenSessionsForStudents = async (req, res) => {
+  try {
+    const sessions = await Session.find({ status: "OPEN" })
+      .populate("mentor", "name email skills domain")
+      .sort({ createdAt: -1 });
 
     res.status(200).json({ sessions });
   } catch (err) {
@@ -197,5 +229,6 @@ module.exports = {
   cancelSession,
   getMentorSessions,
   getStudentSessions,
+  getOpenSessionsForStudents,
   completeSession
 };
