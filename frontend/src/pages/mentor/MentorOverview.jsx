@@ -80,7 +80,7 @@ export default function MentorOverview() {
                     {session.topic}
                   </p>
                   <p className="text-sm text-gray-500">
-                    with {session.student.name}
+                    with {session.student?.name || "TBD student"}
                   </p>
                 </div>
                 <span className="bg-blue-100 text-blue-600 px-3 py-1 rounded-full text-sm">
@@ -107,7 +107,7 @@ export default function MentorOverview() {
                     {request.topic}
                   </p>
                   <p className="text-sm text-gray-500">
-                    {request.student.name}
+                    {request.student?.name || "Unknown student"}
                   </p>
                 </div>
                 <span className="bg-yellow-200 text-yellow-700 px-3 py-1 rounded-full text-sm">

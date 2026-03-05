@@ -1,4 +1,3 @@
-import { Star } from "lucide-react";
 import { useState, useEffect } from "react";
 import axios from "axios";
 
@@ -14,7 +13,10 @@ const StudentSessions = () => {
         const headers = { Authorization: `Bearer ${token}` };
 
         const res = await axios.get("http://localhost:5000/api/student/sessions", { headers });
-        setSessions(res.data.sessions);
+        const filteredSessions = (res.data.sessions || []).filter(
+          (s) => s.status === "REQUESTED" || s.status === "COMPLETED"
+        );
+        setSessions(filteredSessions);
         setLoading(false);
       } catch (err) {
         console.error(err);
@@ -38,12 +40,8 @@ const StudentSessions = () => {
     switch (status) {
       case "REQUESTED":
         return "bg-yellow-100 text-yellow-600";
-      case "ACCEPTED":
-        return "bg-blue-100 text-blue-600";
       case "COMPLETED":
         return "bg-green-100 text-green-600";
-      case "REJECTED":
-        return "bg-red-100 text-red-500";
       default:
         return "bg-gray-100 text-gray-600";
     }
@@ -53,12 +51,8 @@ const StudentSessions = () => {
     switch (status) {
       case "REQUESTED":
         return "Pending";
-      case "ACCEPTED":
-        return "Upcoming";
       case "COMPLETED":
         return "Completed";
-      case "REJECTED":
-        return "Rejected";
       default:
         return status;
     }

@@ -1,4 +1,4 @@
-import { Calendar, Clock, Users, Plus } from "lucide-react";
+import { Users, Plus } from "lucide-react";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import CreateSessionModal from "../student/CreateSessionModal";
@@ -8,7 +8,6 @@ const MentorSessions = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  const [students, setStudents] = useState([]);
 
   const fetchSessions = async () => {
     try {
@@ -18,14 +17,6 @@ const MentorSessions = () => {
       const res = await axios.get("http://localhost:5000/api/mentor/sessions", { headers });
       const allSessions = res.data.sessions || [];
       setSessions(allSessions);
-
-      const studentMap = new Map();
-      allSessions.forEach((session) => {
-        if (session.student?._id && !studentMap.has(session.student._id)) {
-          studentMap.set(session.student._id, session.student);
-        }
-      });
-      setStudents(Array.from(studentMap.values()));
       setLoading(false);
     } catch (err) {
       console.error(err);
@@ -78,14 +69,13 @@ const MentorSessions = () => {
         {showModal && (
           <CreateSessionModal
             onClose={() => setShowModal(false)}
-            students={students}
             onCreate={async (data) => {
               try {
                 const token = localStorage.getItem("token");
                 const headers = { Authorization: `Bearer ${token}` };
                 await axios.post(
                   "http://localhost:5000/api/sessions/mentor-create",
-                  { studentId: data.studentId, topic: data.title },
+                  { topic: data.title },
                   { headers }
                 );
                 alert("Session created successfully!");
@@ -122,6 +112,7 @@ const MentorSessions = () => {
                     </h3>
 
                     <span className={`text-sm font-medium px-3 py-1 rounded-full ${
+                      session.status === "OPEN" ? "bg-gray-100 text-gray-700" :
                       session.status === "ACCEPTED" ? "bg-green-100 text-green-700" :
                       session.status === "REQUESTED" ? "bg-yellow-100 text-yellow-700" :
                       session.status === "COMPLETED" ? "bg-blue-100 text-blue-700" :
@@ -132,7 +123,7 @@ const MentorSessions = () => {
                   </div>
 
                   <p className="text-gray-500 mt-2">
-                    Student: <span className="font-semibold">{session.student.name}</span>
+                    Student: <span className="font-semibold">{session.student?.name || "Open to all students"}</span>
                   </p>
                 </div>
 
@@ -161,7 +152,7 @@ const MentorSessions = () => {
               <div className="flex gap-6 mt-5 text-gray-600 text-sm items-center">
                 <div className="flex items-center gap-2">
                   <Users size={16} />
-                  {session.student.email}
+                  {session.student?.email || "No student yet"}
                 </div>
               </div>
             </div>
