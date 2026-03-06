@@ -1,5 +1,6 @@
 const User = require("../models/User");
 const Session = require("../models/Session");
+const Resource = require("../models/Resource");
 
 // Search mentors
 const searchMentors = async (req, res) => {
@@ -73,19 +74,26 @@ const getStudentStats = async (req, res) => {
     const allSessions = await Session.find({ student: studentId });
 
     // Count upcoming sessions (REQUESTED and ACCEPTED)
-    const upcomingCount = allSessions.filter(s => 
-      (s.status === "REQUESTED" || s.status === "ACCEPTED") && new Date(s.createdAt) > new Date(Date.now() - 7*24*60*60*1000)
+    const upcomingCount = allSessions.filter(
+      (s) => s.status === "REQUESTED" || s.status === "ACCEPTED"
     ).length;
 
     // Count completed sessions
     const completedCount = allSessions.filter(s => s.status === "COMPLETED").length;
 
-    // For resources, get total from database (placeholder for now)
-    const resourcesCount = 3;
+    const eligibleSessions = await Session.find({
+      student: studentId,
+      status: { $in: ["ACCEPTED", "COMPLETED"] }
+    }).select("mentor");
+
+    const mentorIds = [...new Set(eligibleSessions.map((s) => s.mentor.toString()))];
+    const resourcesCount = mentorIds.length
+      ? await Resource.countDocuments({ mentor: { $in: mentorIds } })
+      : 0;
 
     // For skills, get from user profile
     const student = await User.findById(studentId);
-    const skillsTracked = student?.skills?.length || 5;
+    const skillsTracked = student?.studentSkills?.length || 0;
 
     res.status(200).json({
       stats: {

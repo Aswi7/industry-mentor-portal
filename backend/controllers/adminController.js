@@ -34,4 +34,18 @@ const approveMentor = async (req, res) => {
   }
 };
 
-module.exports = { getPendingMentors, approveMentor };
+// Get all users for admin users page
+const getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find({})
+      .select("-password")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({ users });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+module.exports = { getPendingMentors, approveMentor, getAllUsers };

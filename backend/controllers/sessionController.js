@@ -54,15 +54,16 @@ const requestSession = async (req, res) => {
 // Mentor creates an open session
 const createSessionByMentor = async (req, res) => {
   try {
-    const { topic } = req.body;
+    const { topic, title } = req.body;
+    const normalizedTopic = (topic || title || "").trim();
 
-    if (!topic) {
+    if (!normalizedTopic) {
       return res.status(400).json({ message: "topic is required" });
     }
 
     const session = await Session.create({
       mentor: req.user.id,
-      topic,
+      topic: normalizedTopic,
       status: "OPEN"
     });
 

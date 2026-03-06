@@ -53,9 +53,9 @@ const getMentorStats = async (req, res) => {
     );
     const menteesCount = menteeIds.size;
 
-    // Count upcoming sessions (REQUESTED and ACCEPTED)
-    const upcomingCount = allSessions.filter(s => 
-      (s.status === "REQUESTED" || s.status === "ACCEPTED") && new Date(s.createdAt) > new Date(Date.now() - 7*24*60*60*1000)
+    // Count upcoming sessions (OPEN and ACCEPTED)
+    const upcomingCount = allSessions.filter(
+      (s) => s.status === "OPEN" || s.status === "ACCEPTED"
     ).length;
 
     // Count pending requests (REQUESTED status)
