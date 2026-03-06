@@ -217,7 +217,11 @@ const getCurrentUser = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    res.status(200).json({ user });
+    const admin = await User.findOne({ role: "ADMIN" })
+      .select("email")
+      .sort({ createdAt: 1 });
+
+    res.status(200).json({ user, adminEmail: admin?.email || "" });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error" });
