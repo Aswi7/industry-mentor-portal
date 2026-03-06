@@ -25,7 +25,9 @@ const StudentOverview = () => {
 
         // Fetch sessions
         const sessionsRes = await axios.get("http://localhost:5000/api/student/sessions", { headers });
-        const upcoming = sessionsRes.data.sessions.filter(s => s.status === "ACCEPTED").slice(0, 1);
+        const upcoming = sessionsRes.data.sessions
+          .filter((s) => s.status === "REQUESTED" || s.status === "ACCEPTED")
+          .slice(0, 1);
         setUpcomingSessions(upcoming);
 
         setLoading(false);

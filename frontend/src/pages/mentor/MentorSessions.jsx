@@ -16,7 +16,7 @@ const MentorSessions = () => {
 
       const res = await axios.get("http://localhost:5000/api/mentor/sessions", { headers });
       const allSessions = (res.data.sessions || []).filter(
-        (session) => session.status !== "REQUESTED"
+        (session) => session.status !== "REQUESTED" && session.status !== "REJECTED"
       );
       setSessions(allSessions);
       setLoading(false);
@@ -47,7 +47,9 @@ const MentorSessions = () => {
   if (loading) return <div className="p-8 text-center">Loading sessions...</div>;
   if (error) return <div className="p-8 text-red-500">{error}</div>;
 
-  const upcomingSessions = sessions.filter((session) => session.status === "ACCEPTED");
+  const upcomingSessions = sessions.filter(
+    (session) => session.status === "OPEN" || session.status === "ACCEPTED"
+  );
   const completedSessions = sessions.filter((session) => session.status === "COMPLETED");
 
   return (

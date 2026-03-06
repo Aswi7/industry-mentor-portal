@@ -14,7 +14,7 @@ const StudentSessions = () => {
 
         const res = await axios.get("http://localhost:5000/api/student/sessions", { headers });
         const filteredSessions = (res.data.sessions || []).filter(
-          (s) => s.status === "REQUESTED" || s.status === "COMPLETED"
+          (s) => s.status === "REQUESTED" || s.status === "ACCEPTED" || s.status === "COMPLETED"
         );
         setSessions(filteredSessions);
         setLoading(false);
@@ -40,6 +40,8 @@ const StudentSessions = () => {
     switch (status) {
       case "REQUESTED":
         return "bg-yellow-100 text-yellow-600";
+      case "ACCEPTED":
+        return "bg-blue-100 text-blue-600";
       case "COMPLETED":
         return "bg-green-100 text-green-600";
       default:
@@ -51,6 +53,8 @@ const StudentSessions = () => {
     switch (status) {
       case "REQUESTED":
         return "Pending";
+      case "ACCEPTED":
+        return "Accepted";
       case "COMPLETED":
         return "Completed";
       default:

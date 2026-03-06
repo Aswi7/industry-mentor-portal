@@ -30,7 +30,9 @@ export default function MentorOverview() {
 
         // Fetch sessions
         const sessionsRes = await axios.get("http://localhost:5000/api/mentor/sessions", { headers })
-        const upcoming = sessionsRes.data.sessions.filter(s => s.status === "ACCEPTED").slice(0, 1)
+        const upcoming = sessionsRes.data.sessions
+          .filter((s) => s.status === "OPEN" || s.status === "ACCEPTED")
+          .slice(0, 1)
         setUpcomingSessions(upcoming)
 
         setLoading(false)

@@ -1,37 +1,72 @@
-import React from "react";
+import { useEffect, useMemo, useState } from "react";
+import axios from "axios";
 
-const users = [
-  {
-    initials: "AS",
-    name: "Arjun Sharma",
-    email: "arjun@student.edu",
-    role: "student",
-    details: "React, Python, Data Structures",
-  },
-  {
-    initials: "PP",
-    name: "Priya Patel",
-    email: "priya@student.edu",
-    role: "student",
-    details: "Java, Machine Learning, SQL",
-  },
-  {
-    initials: "RK",
-    name: "Rajesh Kumar",
-    email: "rajesh@mentor.com",
-    role: "mentor",
-    details: "Google",
-  },
-  {
-    initials: "SR",
-    name: "Sneha Reddy",
-    email: "sneha@mentor.com",
-    role: "mentor",
-    details: "Microsoft",
-  },
-];
+const getInitials = (name = "") =>
+  name
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((n) => n[0]?.toUpperCase() || "")
+    .join("");
+
+const getUserDetails = (user) => {
+  if (user.role === "MENTOR") {
+    if (user.skills?.length) return user.skills.join(", ");
+    return user.domain || "-";
+  }
+  if (user.role === "STUDENT") {
+    if (user.studentSkills?.length) return user.studentSkills.join(", ");
+    return user.studentDomain || "-";
+  }
+  return "-";
+};
 
 export default function AdminUsers() {
+  const [users, setUsers] = useState([]);
+  const [query, setQuery] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const headers = { Authorization: `Bearer ${token}` };
+        const res = await axios.get("http://localhost:5000/api/admin/users", { headers });
+        setUsers(res.data.users || []);
+      } catch (err) {
+        console.error(err);
+        setError("Failed to load users");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUsers();
+  }, []);
+
+  const filteredUsers = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return users;
+    return users.filter((user) => {
+      const details = getUserDetails(user).toLowerCase();
+      return (
+        user.name?.toLowerCase().includes(q) ||
+        user.email?.toLowerCase().includes(q) ||
+        user.role?.toLowerCase().includes(q) ||
+        details.includes(q)
+      );
+    });
+  }, [users, query]);
+
+  if (loading) {
+    return <div style={{ padding: "30px" }}>Loading users...</div>;
+  }
+
+  if (error) {
+    return <div style={{ padding: "30px", color: "#dc2626" }}>{error}</div>;
+  }
+
   return (
     <div style={{ padding: "30px", background: "#f4f6f9", minHeight: "100vh" }}>
       <h2 style={{ fontSize: "28px", fontWeight: "600" }}>User Management</h2>
@@ -42,6 +77,8 @@ export default function AdminUsers() {
       <input
         type="text"
         placeholder="Search users..."
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
         style={{
           width: "350px",
           padding: "10px",
@@ -69,8 +106,8 @@ export default function AdminUsers() {
             </tr>
           </thead>
           <tbody>
-            {users.map((user, index) => (
-              <tr key={index} style={{ borderTop: "1px solid #eee" }}>
+            {filteredUsers.map((user) => (
+              <tr key={user._id} style={{ borderTop: "1px solid #eee" }}>
                 <td style={tdStyle}>
                   <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                     <div
@@ -86,7 +123,7 @@ export default function AdminUsers() {
                         color: "#1d4ed8",
                       }}
                     >
-                      {user.initials}
+                      {getInitials(user.name)}
                     </div>
                     {user.name}
                   </div>
@@ -99,18 +136,25 @@ export default function AdminUsers() {
                       borderRadius: "20px",
                       fontSize: "12px",
                       background:
-                        user.role === "student" ? "#e0edff" : "#d1fae5",
+                        user.role === "STUDENT" ? "#e0edff" : "#d1fae5",
                       color:
-                        user.role === "student" ? "#2563eb" : "#059669",
+                        user.role === "STUDENT" ? "#2563eb" : "#059669",
                       fontWeight: "500",
                     }}
                   >
                     {user.role}
                   </span>
                 </td>
-                <td style={tdStyle}>{user.details}</td>
+                <td style={tdStyle}>{getUserDetails(user)}</td>
               </tr>
             ))}
+            {filteredUsers.length === 0 && (
+              <tr>
+                <td style={tdStyle} colSpan={4}>
+                  No users found.
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
