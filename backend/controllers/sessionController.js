@@ -73,6 +73,32 @@ const createSessionByMentor = async (req, res) => {
   }
 };
 
+// Mentor cancels a session they created
+const mentorCancelSession = async (req, res) => {
+  try {
+    const session = await Session.findById(req.params.sessionId);
+
+    if (!session) {
+      return res.status(404).json({ message: "Session not found" });
+    }
+
+    if (session.mentor.toString() !== req.user.id) {
+      return res.status(403).json({ message: "Not authorized" });
+    }
+
+    if (session.status === "COMPLETED") {
+      return res.status(400).json({ message: "Completed sessions cannot be canceled" });
+    }
+
+    await Session.deleteOne({ _id: session._id });
+
+    return res.status(200).json({ message: "Session canceled successfully" });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
 
 // CANCEL SESSION (student can cancel a pending request)
 const cancelSession = async (req, res) => {
@@ -223,6 +249,7 @@ const completeSession = async (req, res) => {
 // EXPORT ALL
 module.exports = {
   createSessionByMentor,
+  mentorCancelSession,
   requestSession,
   acceptSession,
   rejectSession,

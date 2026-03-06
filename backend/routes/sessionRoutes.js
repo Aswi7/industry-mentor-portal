@@ -5,6 +5,7 @@ const { protect, studentOnly, mentorOnly } = require("../middleware/authMiddlewa
 
 const { 
   createSessionByMentor,
+  mentorCancelSession,
   requestSession, 
   acceptSession, 
   rejectSession, 
@@ -20,6 +21,7 @@ router.post("/request", protect, studentOnly, requestSession);
 
 // Mentor creates open session
 router.post("/mentor-create", protect, mentorOnly, createSessionByMentor);
+router.delete("/mentor-cancel/:sessionId", protect, mentorOnly, mentorCancelSession);
 
 // Students view all open sessions created by mentors
 router.get("/open", protect, studentOnly, getOpenSessionsForStudents);
