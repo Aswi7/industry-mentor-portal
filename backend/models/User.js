@@ -16,9 +16,18 @@ const userSchema = new mongoose.Schema({
     unique: true,
     lowercase: true,
   },
+  phone: {
+    type: String,
+    trim: true,
+  },
   password: {
     type: String,
     required: true,
+  },
+  linkedinId: {
+    type: String,
+    unique: true,
+    sparse: true,
   },
   role: {
     type: String,

@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+const User = require("../models/User");
 
 /**
  * 🔐 Protect routes – checks if user is logged in
@@ -54,13 +55,29 @@ const adminOnly = (req, res, next) => {
 /**
  * 🧑‍🏫 Mentor-only access
  */
-const mentorOnly = (req, res, next) => {
-  if (req.user && req.user.role === "MENTOR") {
-    next();
-  } else {
+const mentorOnly = async (req, res, next) => {
+  if (!req.user || req.user.role !== "MENTOR") {
     return res.status(403).json({
       message: "Access denied: Mentor only",
     });
+  }
+
+  try {
+    const mentor = await User.findById(req.user.id).select("mentorStatus");
+    if (!mentor) {
+      return res.status(404).json({ message: "Mentor not found" });
+    }
+
+    if (!["VERIFIED", "ACTIVE"].includes(mentor.mentorStatus)) {
+      return res.status(403).json({
+        message: "Mentor approval pending",
+        mentorStatus: mentor.mentorStatus,
+      });
+    }
+
+    next();
+  } catch (error) {
+    return res.status(500).json({ message: "Server error" });
   }
 };
 
