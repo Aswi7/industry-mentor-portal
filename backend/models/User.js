@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 // Define allowed roles
 const roles = ["STUDENT", "MENTOR", "ADMIN"];
-const mentorStatus = ["PENDING", "VERIFIED", "ACTIVE"];
+const mentorStatus = ["PENDING", "VERIFIED", "ACTIVE", "REJECTED"];
 
 const userSchema = new mongoose.Schema({
   name: {
