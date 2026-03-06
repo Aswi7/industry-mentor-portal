@@ -6,10 +6,12 @@ function Register() {
   const [role, setRole] = useState("STUDENT")
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
+  const [phone, setPhone] = useState("")
   const [password, setPassword] = useState("")
   const [skills, setSkills] = useState("")
   const [domain, setDomain] = useState("")
   const [loading, setLoading] = useState(false)
+  const [linkedinLoading, setLinkedinLoading] = useState(false)
   const [error, setError] = useState("")
   const navigate = useNavigate()
 
@@ -25,6 +27,7 @@ function Register() {
         role: role.toUpperCase(),
         name,
         email,
+        phone,
         password,
         ...(role.toUpperCase() === "MENTOR" && { 
           skills: skillsArray,
@@ -46,19 +49,29 @@ function Register() {
       localStorage.setItem("user", JSON.stringify(data.user))
 
       // Redirect based on role
-      const dashboardRoutes = {
-        STUDENT: "/student",
-        MENTOR: "/mentor",
-        ADMIN: "/admin"
+      if (role.toUpperCase() === "MENTOR") {
+        const mentorStatus = data.user?.mentorStatus
+        if (mentorStatus === "VERIFIED" || mentorStatus === "ACTIVE") {
+          navigate("/mentor")
+        } else {
+          navigate("/mentor/pending")
+        }
+      } else if (role.toUpperCase() === "STUDENT") {
+        navigate("/student")
+      } else {
+        navigate("/admin")
       }
-
-      navigate(dashboardRoutes[role.toUpperCase()])
     } catch (err) {
       setError(err.response?.data?.message || "Registration failed. Please try again.")
       console.error(err)
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleLinkedinSignup = () => {
+    setLinkedinLoading(true)
+    window.location.href = `http://localhost:5000/api/auth/linkedin?role=${role.toUpperCase()}`
   }
 
   return (
@@ -176,6 +189,21 @@ function Register() {
             />
           </div>
 
+          {/* Phone Number */}
+          <div className="mb-4">
+            <label className="block text-sm mb-1 text-gray-600">
+              Phone Number
+            </label>
+            <input
+              type="tel"
+              placeholder="+1 555 123 4567"
+              className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              required={role === "MENTOR"}
+            />
+          </div>
+
           {/* Skills / Domain - Different for Student and Mentor */}
           <div className="mb-6">
             <label className="block text-sm mb-1 text-gray-600">
@@ -213,6 +241,25 @@ function Register() {
           >
             {loading ? "Creating Account..." : "Create Account"}
           </button>
+
+          {role === "MENTOR" && (
+            <>
+              <div className="my-4 flex items-center">
+                <div className="h-px bg-gray-300 flex-1" />
+                <span className="px-3 text-xs text-gray-500">OR</span>
+                <div className="h-px bg-gray-300 flex-1" />
+              </div>
+
+              <button
+                type="button"
+                onClick={handleLinkedinSignup}
+                disabled={linkedinLoading}
+                className="w-full border border-blue-600 text-blue-700 py-2 rounded-lg hover:bg-blue-50 transition disabled:opacity-60"
+              >
+                {linkedinLoading ? "Redirecting to LinkedIn..." : "Sign up with LinkedIn"}
+              </button>
+            </>
+          )}
         </form>
 
         {/* Login Link */}

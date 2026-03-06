@@ -38,7 +38,12 @@ function Login() {
         navigate("/student")
       } 
       else if (userRole === "mentor") {
-        navigate("/mentor")
+        const mentorStatus = res.data.user.mentorStatus
+        if (mentorStatus === "VERIFIED" || mentorStatus === "ACTIVE") {
+          navigate("/mentor")
+        } else {
+          navigate("/mentor/pending")
+        }
       } 
       else {
         navigate("/admin")

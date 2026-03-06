@@ -1,13 +1,15 @@
-import { Routes, Route } from "react-router-dom"
+import { Navigate, Routes, Route } from "react-router-dom"
 
 import Login from "./pages/Login"
 import Register from "./pages/Register"
+import LinkedInCallback from "./pages/LinkedInCallback"
 
 import MentorDashboard from "./pages/mentor/MentorDashboard"
 import MentorOverview from "./pages/mentor/MentorOverview"
 import MentorSessions from "./pages/mentor/MentorSessions"
 import MentorResources from "./pages/mentor/MentorResources"
 import MentorMentees from "./pages/mentor/MentorMentees"
+import MentorPending from "./pages/mentor/MentorPending"
 
 
 import StudentDashboard from "./pages/student/StudentDashboard"
@@ -24,6 +26,30 @@ import AdminApprovals from "./pages/admin/AdminApprovals"
 import AdminReports from "./pages/admin/AdminReports"
 import StudentOverview from "./pages/student/StudentOverview"
 
+const getStoredUser = () => {
+  try {
+    return JSON.parse(localStorage.getItem("user") || "null")
+  } catch {
+    return null
+  }
+}
+
+const isMentorApproved = (status) => ["VERIFIED", "ACTIVE"].includes(status)
+
+const MentorRouteGuard = ({ children }) => {
+  const user = getStoredUser()
+  if (!user || user.role !== "MENTOR") return <Navigate to="/" replace />
+  if (!isMentorApproved(user.mentorStatus)) return <Navigate to="/mentor/pending" replace />
+  return children
+}
+
+const MentorPendingGuard = ({ children }) => {
+  const user = getStoredUser()
+  if (!user || user.role !== "MENTOR") return <Navigate to="/" replace />
+  if (isMentorApproved(user.mentorStatus)) return <Navigate to="/mentor" replace />
+  return children
+}
+
 function App() {
   return (
     <Routes>
@@ -31,10 +57,26 @@ function App() {
       {/* Auth */}
       <Route path="/" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/auth/linkedin/callback" element={<LinkedInCallback />} />
+      <Route
+        path="/mentor/pending"
+        element={
+          <MentorPendingGuard>
+            <MentorPending />
+          </MentorPendingGuard>
+        }
+      />
 
 
      {/* Mentor */}
-<Route path="/mentor" element={<MentorDashboard />}>
+<Route
+  path="/mentor"
+  element={
+    <MentorRouteGuard>
+      <MentorDashboard />
+    </MentorRouteGuard>
+  }
+>
   <Route index element={<MentorOverview />} />
   <Route path="sessions" element={<MentorSessions />} />
   <Route path="mentees" element={<MentorMentees />} />
