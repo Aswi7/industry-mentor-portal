@@ -1,65 +1,48 @@
-import React from "react";
+import { useEffect, useState } from "react";
+import axios from "axios";
 
 const AdminSessions = () => {
-  const sessions = [
-    {
-      title: "System Design Fundamentals",
-      mentor: "Rajesh Kumar",
-      student: "Arjun Sharma",
-      date: "2026-02-15 10:00 AM",
-      status: "upcoming",
-    },
-    {
-      title: "ML Model Deployment",
-      mentor: "Sneha Reddy",
-      student: "Priya Patel",
-      date: "2026-02-14 2:00 PM",
-      status: "upcoming",
-    },
-    {
-      title: "DSA Problem Solving",
-      mentor: "Rajesh Kumar",
-      student: "Arjun Sharma",
-      date: "2026-02-10 11:00 AM",
-      status: "completed",
-    },
-    {
-      title: "Python for Data Science",
-      mentor: "Sneha Reddy",
-      student: "Priya Patel",
-      date: "2026-02-08 3:00 PM",
-      status: "completed",
-    },
-    {
-      title: "Web Dev Best Practices",
-      mentor: "Rajesh Kumar",
-      student: "Priya Patel",
-      date: "2026-02-16 4:00 PM",
-      status: "pending",
-    },
-    {
-      title: "Data Analytics Workshop",
-      mentor: "Sneha Reddy",
-      student: "Arjun Sharma",
-      date: "2026-02-05 1:00 PM",
-      status: "cancelled",
-    },
-  ];
+  const [sessions, setSessions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const fetchSessions = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const headers = { Authorization: `Bearer ${token}` };
+        const res = await axios.get("http://localhost:5000/api/admin/sessions", { headers });
+        setSessions(res.data.sessions || []);
+      } catch (err) {
+        console.error(err);
+        setError("Failed to load sessions");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSessions();
+  }, []);
 
   const getStatusStyle = (status) => {
     switch (status) {
-      case "upcoming":
+      case "OPEN":
         return "bg-blue-100 text-blue-600";
-      case "completed":
+      case "COMPLETED":
         return "bg-green-100 text-green-600";
-      case "pending":
+      case "REQUESTED":
         return "bg-yellow-100 text-yellow-600";
-      case "cancelled":
+      case "REJECTED":
         return "bg-red-100 text-red-600";
+      case "ACCEPTED":
+        return "bg-indigo-100 text-indigo-600";
       default:
         return "bg-gray-100 text-gray-600";
     }
   };
+
+  if (loading) return <div className="p-8">Loading sessions...</div>;
+  if (error) return <div className="p-8 text-red-600">{error}</div>;
 
   return (
     <div className="p-8 bg-gray-50 min-h-screen">
@@ -79,33 +62,38 @@ const AdminSessions = () => {
             <tr>
               <th className="p-4">Title</th>
               <th className="p-4">Mentor</th>
-              <th className="p-4">Student</th>
               <th className="p-4">Date</th>
               <th className="p-4">Status</th>
             </tr>
           </thead>
 
           <tbody>
-            {sessions.map((session, index) => (
+            {sessions.map((session) => (
               <tr
-                key={index}
+                key={session._id}
                 className="border-t hover:bg-gray-50 transition"
               >
-                <td className="p-4">{session.title}</td>
-                <td className="p-4">{session.mentor}</td>
-                <td className="p-4">{session.student}</td>
-                <td className="p-4">{session.date}</td>
+                <td className="p-4">{session.topic}</td>
+                <td className="p-4">{session.mentor?.name || "-"}</td>
+                <td className="p-4">{new Date(session.createdAt).toLocaleString()}</td>
                 <td className="p-4">
                   <span
                     className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusStyle(
                       session.status
                     )}`}
                   >
-                    {session.status}
+                    {(session.status || "UNKNOWN").toLowerCase()}
                   </span>
                 </td>
               </tr>
             ))}
+            {sessions.length === 0 && (
+              <tr className="border-t">
+                <td className="p-4 text-gray-500" colSpan={4}>
+                  No sessions found.
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>

@@ -1,4 +1,5 @@
-import React from "react";
+import { useEffect, useMemo, useState } from "react";
+import axios from "axios";
 import {
   BarChart,
   Bar,
@@ -12,19 +13,75 @@ import {
 } from "recharts";
 
 const AdminReports = () => {
-  const topicData = [
-    { name: "System Design", sessions: 5 },
-    { name: "Machine Learning", sessions: 8 },
-    { name: "Python", sessions: 6 },
-    { name: "Data Analytics", sessions: 4 },
-  ];
+  const [users, setUsers] = useState([]);
+  const [sessions, setSessions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const weeklyData = [
-    { week: "Week 1", sessions: 3 },
-    { week: "Week 2", sessions: 5 },
-    { week: "Week 3", sessions: 4 },
-    { week: "Week 4", sessions: 6 },
-  ];
+  useEffect(() => {
+    const fetchReportsData = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const headers = { Authorization: `Bearer ${token}` };
+
+        const [usersRes, sessionsRes] = await Promise.all([
+          axios.get("http://localhost:5000/api/admin/users", { headers }),
+          axios.get("http://localhost:5000/api/admin/sessions", { headers }),
+        ]);
+
+        setUsers(usersRes.data.users || []);
+        setSessions(sessionsRes.data.sessions || []);
+      } catch (err) {
+        console.error(err);
+        setError("Failed to load reports data");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchReportsData();
+  }, []);
+
+  const topicData = useMemo(() => {
+    const counts = sessions.reduce((acc, session) => {
+      const topic = session.topic?.trim() || "Untitled";
+      acc[topic] = (acc[topic] || 0) + 1;
+      return acc;
+    }, {});
+
+    return Object.entries(counts)
+      .map(([name, count]) => ({ name, sessions: count }))
+      .sort((a, b) => b.sessions - a.sessions)
+      .slice(0, 8);
+  }, [sessions]);
+
+  const weeklyData = useMemo(() => {
+    const now = new Date();
+    const start = new Date(now);
+    start.setDate(now.getDate() - 27);
+    start.setHours(0, 0, 0, 0);
+
+    const labels = ["Week 1", "Week 2", "Week 3", "Week 4"];
+    const buckets = labels.map((week) => ({ week, sessions: 0 }));
+
+    sessions.forEach((session) => {
+      const createdAt = new Date(session.createdAt);
+      if (createdAt < start || createdAt > now) return;
+
+      const dayDiff = Math.floor((createdAt - start) / (1000 * 60 * 60 * 24));
+      const bucketIndex = Math.min(3, Math.max(0, Math.floor(dayDiff / 7)));
+      buckets[bucketIndex].sessions += 1;
+    });
+
+    return buckets;
+  }, [sessions]);
+
+  const totalUsers = users.length;
+  const completedSessions = sessions.filter((session) => session.status === "COMPLETED").length;
+  const totalSessions = sessions.length;
+
+  if (loading) return <div className="p-8">Loading reports...</div>;
+  if (error) return <div className="p-8 text-red-600">{error}</div>;
 
   return (
     <div className="h-full overflow-y-auto p-8 bg-gray-50">
@@ -39,7 +96,7 @@ const AdminReports = () => {
           </h2>
 
           <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={topicData}>
+            <BarChart data={topicData.length ? topicData : [{ name: "No data", sessions: 0 }]}>
               <XAxis dataKey="name" />
               <YAxis />
               <Tooltip />
@@ -55,7 +112,7 @@ const AdminReports = () => {
           </h2>
 
           <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={weeklyData}>
+            <LineChart data={weeklyData.length ? weeklyData : [{ week: "Week 1", sessions: 0 }]}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="week" />
               <YAxis />
@@ -75,18 +132,18 @@ const AdminReports = () => {
       <div className="grid grid-cols-3 gap-6">
 
         <div className="bg-white p-6 rounded-xl shadow text-center">
-          <p className="text-4xl font-bold text-blue-600">5</p>
+          <p className="text-4xl font-bold text-blue-600">{totalUsers}</p>
           <p className="text-gray-600 mt-2">Total Users</p>
         </div>
 
         <div className="bg-white p-6 rounded-xl shadow text-center">
-          <p className="text-4xl font-bold text-green-600">2</p>
+          <p className="text-4xl font-bold text-green-600">{completedSessions}</p>
           <p className="text-gray-600 mt-2">Sessions Completed</p>
         </div>
 
         <div className="bg-white p-6 rounded-xl shadow text-center">
-          <p className="text-4xl font-bold text-blue-500">300</p>
-          <p className="text-gray-600 mt-2">Total Minutes</p>
+          <p className="text-4xl font-bold text-blue-500">{totalSessions}</p>
+          <p className="text-gray-600 mt-2">Total Sessions</p>
         </div>
 
       </div>
