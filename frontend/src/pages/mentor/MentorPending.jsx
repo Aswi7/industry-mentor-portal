@@ -8,6 +8,7 @@ export default function MentorPending() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [adminEmail, setAdminEmail] = useState("");
 
   const [user, setUser] = useState(() => {
     try {
@@ -42,6 +43,7 @@ export default function MentorPending() {
 
         const latestUser = res.data?.user;
         if (!latestUser) return;
+        setAdminEmail(res.data?.adminEmail || "");
 
         setUser(latestUser);
         localStorage.setItem("user", JSON.stringify(latestUser));
@@ -68,6 +70,20 @@ export default function MentorPending() {
   return (
     <div className="min-h-screen bg-slate-100 flex items-center justify-center px-4">
       <div className="w-full max-w-2xl bg-white rounded-2xl shadow p-8">
+        {user?.mentorStatus === "REJECTED" ? (
+          <div className="text-center mb-8">
+            <div className="mx-auto w-16 h-16 rounded-full bg-red-100 text-red-600 flex items-center justify-center text-2xl mb-4">
+              !
+            </div>
+            <h1 className="text-4xl font-bold text-slate-900">Approval Rejected</h1>
+            <p className="mt-4 text-slate-700">
+              Hi {user?.name || "Mentor"}, your mentor application was not approved by the admin team.
+            </p>
+            <p className="mt-2 text-slate-600">
+              For further queries, contact the admin at <span className="font-semibold">{adminEmail || "Not available"}</span>.
+            </p>
+          </div>
+        ) : (
         <div className="text-center mb-8">
           <div className="mx-auto w-16 h-16 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center text-2xl mb-4">
             ...
@@ -80,6 +96,7 @@ export default function MentorPending() {
             You&apos;ll get full access to the mentor dashboard once your profile is approved.
           </p>
         </div>
+        )}
 
         <div className="bg-slate-100 rounded-xl p-5 text-slate-800 space-y-2">
           <p><span className="font-semibold">Name:</span> {user?.name || "-"}</p>
@@ -88,6 +105,9 @@ export default function MentorPending() {
           <p><span className="font-semibold">Domain:</span> {user?.domain || "-"}</p>
           <p><span className="font-semibold">Expertise:</span> {(user?.skills || []).join(", ") || "-"}</p>
           <p><span className="font-semibold">Status:</span> {user?.mentorStatus || "PENDING"}</p>
+          {user?.mentorStatus === "REJECTED" && (
+            <p><span className="font-semibold">Contact:</span> {adminEmail || "Not available"}</p>
+          )}
         </div>
 
         {error && <p className="text-red-600 text-sm mt-4 text-center">{error}</p>}
