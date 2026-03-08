@@ -3,6 +3,7 @@ import { Navigate, Routes, Route } from "react-router-dom"
 import Login from "./pages/Login"
 import Register from "./pages/Register"
 import LinkedInCallback from "./pages/LinkedInCallback"
+import GoogleCalendarCallback from "./pages/GoogleCalendarCallback"
 
 import MentorDashboard from "./pages/mentor/MentorDashboard"
 import MentorOverview from "./pages/mentor/MentorOverview"
@@ -58,6 +59,7 @@ function App() {
       <Route path="/" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/auth/linkedin/callback" element={<LinkedInCallback />} />
+      <Route path="/auth/google/calendar/callback" element={<GoogleCalendarCallback />} />
       <Route
         path="/mentor/pending"
         element={

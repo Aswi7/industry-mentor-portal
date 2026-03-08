@@ -5,6 +5,7 @@ export default function MentorMentees() {
   const [pendingRequests, setPendingRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [actioningId, setActioningId] = useState("");
 
   const fetchPendingRequests = async () => {
     try {
@@ -30,12 +31,16 @@ export default function MentorMentees() {
     try {
       const token = localStorage.getItem("token");
       const headers = { Authorization: `Bearer ${token}` };
+      setActioningId(sessionId);
 
       await axios.put(`http://localhost:5000/api/sessions/${action}/${sessionId}`, {}, { headers });
       await fetchPendingRequests();
+      window.dispatchEvent(new Event("sessionChanged"));
     } catch (err) {
       console.error(err);
       alert(err.response?.data?.message || `Failed to ${action} session`);
+    } finally {
+      setActioningId("");
     }
   };
 
@@ -43,7 +48,7 @@ export default function MentorMentees() {
     if (!name) return "S";
     return name
       .split(" ")
-      .map(word => word[0])
+      .map((word) => word[0])
       .join("")
       .toUpperCase();
   };
@@ -53,13 +58,8 @@ export default function MentorMentees() {
 
   return (
     <div>
-      {/* Title */}
-      <h1 className="text-3xl font-bold text-gray-800">
-        My Mentees
-      </h1>
-      <p className="text-gray-600 mt-1">
-        Student session requests
-      </p>
+      <h1 className="text-3xl font-bold text-gray-800">My Mentees</h1>
+      <p className="text-gray-600 mt-1">Student session requests</p>
 
       <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
         {pendingRequests.length === 0 ? (
@@ -68,24 +68,19 @@ export default function MentorMentees() {
           pendingRequests.map((request) => (
             <div key={request._id} className="bg-white rounded-xl shadow-sm border p-6">
               <div className="flex items-start gap-4">
-                {/* Avatar */}
                 <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-semibold">
                   {getInitials(request.student?.name)}
                 </div>
 
-                {/* Info */}
                 <div className="flex-1">
                   <h2 className="text-lg font-semibold text-gray-800">
                     {request.student?.name || "Unknown student"}
                   </h2>
-                  <p className="text-gray-500 text-sm">
-                    {request.student?.email || "No email"}
-                  </p>
+                  <p className="text-gray-500 text-sm">{request.student?.email || "No email"}</p>
                   <p className="mt-3 text-sm text-gray-700">
                     Requested Session: <span className="font-semibold">{request.topic}</span>
                   </p>
 
-                  {/* Skills */}
                   <div className="flex gap-2 mt-3 flex-wrap">
                     {request.student?.skills && request.student.skills.length > 0 ? (
                       request.student.skills.map((skill, index) => (
@@ -98,20 +93,24 @@ export default function MentorMentees() {
                     )}
                   </div>
 
-                  {/* Domain */}
                   <div className="mt-3 text-sm text-gray-700">
-                    <p>Domain: <span className="font-semibold">{request.student?.domain || "Not specified"}</span></p>
+                    <p>
+                      Domain: <span className="font-semibold">{request.student?.domain || "Not specified"}</span>
+                    </p>
                   </div>
+
                   <div className="mt-4 flex items-center gap-2">
                     <button
                       onClick={() => handleRequestAction(request._id, "accept")}
-                      className="bg-green-100 text-green-700 px-3 py-1 text-sm rounded-full hover:bg-green-200 transition"
+                      disabled={actioningId === request._id}
+                      className="bg-green-100 text-green-700 px-3 py-1 text-sm rounded-full hover:bg-green-200 transition disabled:opacity-60"
                     >
-                      Accept
+                      {actioningId === request._id ? "Processing..." : "Accept"}
                     </button>
                     <button
                       onClick={() => handleRequestAction(request._id, "reject")}
-                      className="bg-red-100 text-red-700 px-3 py-1 text-sm rounded-full hover:bg-red-200 transition"
+                      disabled={actioningId === request._id}
+                      className="bg-red-100 text-red-700 px-3 py-1 text-sm rounded-full hover:bg-red-200 transition disabled:opacity-60"
                     >
                       Reject
                     </button>

@@ -8,6 +8,23 @@ const MentorSessions = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [isCalendarConnected, setIsCalendarConnected] = useState(false);
+  const [connecting, setConnecting] = useState(false);
+
+  const loadCalendarStatus = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const headers = { Authorization: `Bearer ${token}` };
+      const meRes = await axios.get("http://localhost:5000/api/auth/me", { headers });
+      const latestUser = meRes.data?.user;
+      if (latestUser) {
+        setIsCalendarConnected(Boolean(latestUser.googleCalendarConnectedAt || latestUser.googleRefreshToken));
+        localStorage.setItem("user", JSON.stringify(latestUser));
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const fetchSessions = async () => {
     try {
@@ -29,7 +46,18 @@ const MentorSessions = () => {
 
   useEffect(() => {
     fetchSessions();
+    loadCalendarStatus();
   }, []);
+
+  const connectGoogleCalendar = () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("Please login again");
+      return;
+    }
+    setConnecting(true);
+    window.location.href = `http://localhost:5000/api/auth/google/calendar?token=${encodeURIComponent(token)}&next=${encodeURIComponent("/mentor/sessions")}`;
+  };
 
   const handleCancelSession = async (sessionId) => {
     try {
@@ -65,23 +93,46 @@ const MentorSessions = () => {
           </p>
         </div>
 
-        <button
-          onClick={() => setShowModal(true)}
-          className="flex items-center gap-2 bg-blue-600 text-white px-5 py-3 rounded-lg hover:bg-blue-700 transition"
-        >
-          <Plus size={18} />
-          Create Session
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={connectGoogleCalendar}
+            disabled={connecting}
+            className={`px-4 py-3 rounded-lg text-sm font-medium transition ${
+              connecting ? "bg-gray-400 text-white cursor-not-allowed" : "bg-indigo-600 text-white hover:bg-indigo-700"
+            }`}
+          >
+            {connecting ? "Redirecting..." : isCalendarConnected ? "Reconnect Google Calendar" : "Connect Google Calendar"}
+          </button>
+          <button
+            onClick={() => setShowModal(true)}
+            className="flex items-center gap-2 bg-blue-600 text-white px-5 py-3 rounded-lg hover:bg-blue-700 transition"
+          >
+            <Plus size={18} />
+            Create Session
+          </button>
+        </div>
         {showModal && (
           <CreateSessionModal
             onClose={() => setShowModal(false)}
             onCreate={async (data) => {
               try {
+                const localStart = new Date(`${data.date}T${data.time}`);
+                const durationMin = Number(data.duration || 60);
+                const localEnd = new Date(localStart.getTime() + durationMin * 60 * 1000);
+                if (Number.isNaN(localStart.getTime()) || Number.isNaN(localEnd.getTime())) {
+                  alert("Please provide valid date and time");
+                  return;
+                }
+
                 const token = localStorage.getItem("token");
                 const headers = { Authorization: `Bearer ${token}` };
                 await axios.post(
                   "http://localhost:5000/api/sessions/mentor-create",
-                  { topic: data.title },
+                  {
+                    topic: data.title,
+                    startsAt: localStart.toISOString(),
+                    endsAt: localEnd.toISOString(),
+                  },
                   { headers }
                 );
                 alert("Session created successfully!");
@@ -150,6 +201,21 @@ const MentorSessions = () => {
                   <Users size={16} />
                   {session.student?.email || "No student yet"}
                 </div>
+                {session.startsAt && (
+                  <div>
+                    {new Date(session.startsAt).toLocaleString()}
+                  </div>
+                )}
+                {session.meetingLink && (
+                  <a
+                    href={session.meetingLink}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-blue-600 hover:text-blue-800 font-medium"
+                  >
+                    Open Meet
+                  </a>
+                )}
               </div>
             </div>
           ))
