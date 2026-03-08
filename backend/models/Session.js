@@ -20,6 +20,18 @@ const sessionSchema = new mongoose.Schema({
     type: String,
     enum: ["OPEN", "REQUESTED", "ACCEPTED", "REJECTED", "COMPLETED"],
     default: "OPEN"
+  },
+  startsAt: {
+    type: Date,
+  },
+  endsAt: {
+    type: Date,
+  },
+  meetingLink: {
+    type: String,
+  },
+  googleEventId: {
+    type: String,
   }
 }, { timestamps: true });
 

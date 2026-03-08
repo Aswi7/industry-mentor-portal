@@ -1,4 +1,58 @@
 const Session = require("../models/Session");
+const User = require("../models/User");
+const { google } = require("googleapis");
+
+const createGoogleMeetForSession = async ({ mentor, student, session, startsAt, endsAt }) => {
+  if (!mentor?.googleRefreshToken) {
+    throw new Error("Google Calendar not connected. Connect your Google account first.");
+  }
+
+  const clientId = process.env.GOOGLE_CLIENT_ID || process.env.CLIENT_ID;
+  const clientSecret = process.env.GOOGLE_CLIENT_SECRET || process.env.CLIENT_SECRET;
+  const redirectUri =
+    process.env.GOOGLE_CALENDAR_REDIRECT_URI ||
+    process.env.GOOGLE_REDIRECT_URI ||
+    "http://localhost:5000/api/auth/google/calendar/callback";
+
+  if (!clientId || !clientSecret) {
+    throw new Error("Google auth is not configured");
+  }
+
+  const oauth2Client = new google.auth.OAuth2(clientId, clientSecret, redirectUri);
+  oauth2Client.setCredentials({ refresh_token: mentor.googleRefreshToken });
+
+  const calendar = google.calendar({ version: "v3", auth: oauth2Client });
+  const requestId = `mentor-session-${session._id}-${Date.now()}`;
+
+  const event = await calendar.events.insert({
+    calendarId: "primary",
+    conferenceDataVersion: 1,
+    requestBody: {
+      summary: `Mentor Session: ${session.topic}`,
+      description: `Mentor: ${mentor.name}\nStudent: ${student?.name || "N/A"}`,
+      start: {
+        dateTime: startsAt.toISOString(),
+      },
+      end: {
+        dateTime: endsAt.toISOString(),
+      },
+      attendees: student?.email ? [{ email: student.email }] : [],
+      conferenceData: {
+        createRequest: {
+          requestId,
+        },
+      },
+    },
+  });
+
+  return {
+    meetingLink:
+      event.data?.hangoutLink ||
+      event.data?.conferenceData?.entryPoints?.find((entry) => entry.entryPointType === "video")?.uri ||
+      "",
+    googleEventId: event.data?.id || "",
+  };
+};
 
 const requestSession = async (req, res) => {
   try {
@@ -54,22 +108,58 @@ const requestSession = async (req, res) => {
 // Mentor creates an open session
 const createSessionByMentor = async (req, res) => {
   try {
-    const { topic, title } = req.body;
+    const { topic, title, startsAt, endsAt } = req.body;
     const normalizedTopic = (topic || title || "").trim();
 
     if (!normalizedTopic) {
       return res.status(400).json({ message: "topic is required" });
     }
 
+    if (!startsAt || !endsAt) {
+      return res.status(400).json({ message: "startsAt and endsAt are required" });
+    }
+
+    const startInput = new Date(startsAt);
+    const endInput = new Date(endsAt);
+
+    if (Number.isNaN(startInput.getTime()) || Number.isNaN(endInput.getTime()) || endInput <= startInput) {
+      return res.status(400).json({ message: "Invalid startsAt/endsAt values" });
+    }
+
+    const mentor = await User.findById(req.user.id).select("name email googleRefreshToken");
+    if (!mentor) {
+      return res.status(404).json({ message: "Mentor not found" });
+    }
+
     const session = await Session.create({
       mentor: req.user.id,
       topic: normalizedTopic,
+      startsAt: startInput,
+      endsAt: endInput,
       status: "OPEN"
     });
+
+    const { meetingLink, googleEventId } = await createGoogleMeetForSession({
+      mentor,
+      student: null,
+      session,
+      startsAt: startInput,
+      endsAt: endInput,
+    });
+
+    session.meetingLink = meetingLink;
+    session.googleEventId = googleEventId;
+    await session.save();
 
     return res.status(201).json({ message: "Open session created", session });
   } catch (err) {
     console.error(err);
+    if (err.message === "Google Calendar not connected. Connect your Google account first.") {
+      return res.status(400).json({ message: err.message });
+    }
+    if (err.message === "Google auth is not configured") {
+      return res.status(500).json({ message: err.message });
+    }
     return res.status(500).json({ message: "Server error" });
   }
 };
