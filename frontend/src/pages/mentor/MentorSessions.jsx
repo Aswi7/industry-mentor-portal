@@ -10,6 +10,7 @@ const MentorSessions = () => {
   const [showModal, setShowModal] = useState(false);
   const [isCalendarConnected, setIsCalendarConnected] = useState(false);
   const [connecting, setConnecting] = useState(false);
+  const [nowTs, setNowTs] = useState(Date.now());
 
   const loadCalendarStatus = async () => {
     try {
@@ -49,6 +50,40 @@ const MentorSessions = () => {
     loadCalendarStatus();
   }, []);
 
+  useEffect(() => {
+    const timer = setInterval(() => setNowTs(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const getStudentCount = (session) => {
+    if (Array.isArray(session.students)) return session.students.length;
+    return session.student ? 1 : 0;
+  };
+
+  const formatCountdown = (startsAt) => {
+    if (!startsAt) return "Time not set";
+    const startTs = new Date(startsAt).getTime();
+    if (Number.isNaN(startTs)) return "Time not set";
+    const diff = startTs - nowTs;
+    if (diff <= 0) return "Started";
+
+    const totalSeconds = Math.floor(diff / 1000);
+    const days = Math.floor(totalSeconds / 86400);
+    const hours = Math.floor((totalSeconds % 86400) / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+
+    if (days > 0) return `${days}d ${hours}h ${minutes}m ${seconds}s`;
+    return `${hours}h ${minutes}m ${seconds}s`;
+  };
+
+  const formatScheduleDateTime = (startsAt) => {
+    if (!startsAt) return "Schedule not set";
+    const date = new Date(startsAt);
+    if (Number.isNaN(date.getTime())) return "Schedule not set";
+    return date.toLocaleString();
+  };
+
   const connectGoogleCalendar = () => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -79,6 +114,7 @@ const MentorSessions = () => {
     (session) => session.status === "OPEN" || session.status === "ACCEPTED"
   );
   const completedSessions = sessions.filter((session) => session.status === "COMPLETED");
+  const canceledSessions = sessions.filter((session) => session.status === "CANCELED");
 
   return (
     <div className="p-8 bg-gray-100 min-h-screen">
@@ -94,15 +130,6 @@ const MentorSessions = () => {
         </div>
 
         <div className="flex items-center gap-3">
-          <button
-            onClick={connectGoogleCalendar}
-            disabled={connecting}
-            className={`px-4 py-3 rounded-lg text-sm font-medium transition ${
-              connecting ? "bg-gray-400 text-white cursor-not-allowed" : "bg-indigo-600 text-white hover:bg-indigo-700"
-            }`}
-          >
-            {connecting ? "Redirecting..." : isCalendarConnected ? "Reconnect Google Calendar" : "Connect Google Calendar"}
-          </button>
           <button
             onClick={() => setShowModal(true)}
             className="flex items-center gap-2 bg-blue-600 text-white px-5 py-3 rounded-lg hover:bg-blue-700 transition"
@@ -186,6 +213,19 @@ const MentorSessions = () => {
 
                 {/* Status Badge */}
                 <div className="flex gap-2">
+                  {!session.meetingLink && (
+                    <button
+                      onClick={connectGoogleCalendar}
+                      disabled={connecting}
+                      className={`px-3 py-1 text-sm rounded-full transition ${
+                        connecting
+                          ? "bg-gray-400 text-white cursor-not-allowed"
+                          : "bg-indigo-100 text-indigo-700 hover:bg-indigo-200"
+                      }`}
+                    >
+                      {connecting ? "Redirecting..." : isCalendarConnected ? "Reconnect Calendar" : "Connect Calendar"}
+                    </button>
+                  )}
                   <button
                     onClick={() => handleCancelSession(session._id)}
                     className="bg-red-100 text-red-700 px-3 py-1 text-sm rounded-full hover:bg-red-200 transition"
@@ -196,16 +236,17 @@ const MentorSessions = () => {
               </div>
 
               {/* Bottom Info */}
-              <div className="flex gap-6 mt-5 text-gray-600 text-sm items-center">
+              <div className="flex flex-wrap gap-6 mt-5 text-gray-600 text-sm items-center">
                 <div className="flex items-center gap-2">
                   <Users size={16} />
-                  {session.student?.email || "No student yet"}
+                  {getStudentCount(session)} student{getStudentCount(session) === 1 ? "" : "s"}
                 </div>
-                {session.startsAt && (
-                  <div>
-                    {new Date(session.startsAt).toLocaleString()}
-                  </div>
-                )}
+                <div>
+                  Scheduled: {formatScheduleDateTime(session.startsAt)}
+                </div>
+                <div className="font-medium text-blue-700">
+                  Starts in: {formatCountdown(session.startsAt)}
+                </div>
                 {session.meetingLink && (
                   <a
                     href={session.meetingLink}
@@ -257,14 +298,67 @@ const MentorSessions = () => {
               <div className="flex gap-6 mt-5 text-gray-600 text-sm items-center">
                 <div className="flex items-center gap-2">
                   <Users size={16} />
-                  {session.student?.email || "No email"}
+                  {getStudentCount(session)} student{getStudentCount(session) === 1 ? "" : "s"}
                 </div>
+                {session.startsAt && (
+                  <div>
+                    Scheduled: {new Date(session.startsAt).toLocaleString()}
+                  </div>
+                )}
               </div>
             </div>
           ))
         ) : (
           <div className="bg-white p-6 rounded-xl text-center text-gray-400">
             No completed sessions
+          </div>
+        )}
+      </div>
+
+      <h2 className="text-xl font-semibold text-gray-700 mt-10 mb-4">
+        Canceled Sessions
+      </h2>
+
+      <div className="space-y-6">
+        {canceledSessions.length > 0 ? (
+          canceledSessions.map((session) => (
+            <div
+              key={session._id}
+              className="bg-white p-6 rounded-xl shadow-sm border hover:shadow-md transition"
+            >
+              <div className="flex justify-between items-start">
+                <div>
+                  <div className="flex items-center gap-3">
+                    <h3 className="text-lg font-semibold text-gray-800">
+                      {session.topic}
+                    </h3>
+                    <span className="text-sm font-medium px-3 py-1 rounded-full bg-red-100 text-red-700">
+                      CANCELED
+                    </span>
+                  </div>
+
+                  <p className="text-gray-500 mt-2">
+                    Student: <span className="font-semibold">{session.student?.name || "N/A"}</span>
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex gap-6 mt-5 text-gray-600 text-sm items-center">
+                <div className="flex items-center gap-2">
+                  <Users size={16} />
+                  {getStudentCount(session)} student{getStudentCount(session) === 1 ? "" : "s"}
+                </div>
+                {session.startsAt && (
+                  <div>
+                    Scheduled: {new Date(session.startsAt).toLocaleString()}
+                  </div>
+                )}
+              </div>
+            </div>
+          ))
+        ) : (
+          <div className="bg-white p-6 rounded-xl text-center text-gray-400">
+            No canceled sessions
           </div>
         )}
       </div>

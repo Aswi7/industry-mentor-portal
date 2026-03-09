@@ -24,21 +24,24 @@ const AdminSessions = () => {
     fetchSessions();
   }, []);
 
+  const normalizeStatus = (status) => {
+    if (status === "COMPLETED") return "COMPLETED";
+    if (status === "CANCELED" || status === "REJECTED") return "CANCELED";
+    return "UPCOMING";
+  };
+
   const getStatusStyle = (status) => {
-    switch (status) {
-      case "OPEN":
-        return "bg-blue-100 text-blue-600";
-      case "COMPLETED":
-        return "bg-green-100 text-green-600";
-      case "REQUESTED":
-        return "bg-yellow-100 text-yellow-600";
-      case "REJECTED":
-        return "bg-red-100 text-red-600";
-      case "ACCEPTED":
-        return "bg-indigo-100 text-indigo-600";
-      default:
-        return "bg-gray-100 text-gray-600";
-    }
+    const normalized = normalizeStatus(status);
+    if (normalized === "UPCOMING") return "bg-blue-100 text-blue-700";
+    if (normalized === "COMPLETED") return "bg-green-100 text-green-700";
+    return "bg-red-100 text-red-700";
+  };
+
+  const getStatusLabel = (status) => {
+    const normalized = normalizeStatus(status);
+    if (normalized === "UPCOMING") return "upcoming";
+    if (normalized === "COMPLETED") return "completed";
+    return "canceled";
   };
 
   if (loading) return <div className="p-8">Loading sessions...</div>;
@@ -75,14 +78,16 @@ const AdminSessions = () => {
               >
                 <td className="p-4">{session.topic}</td>
                 <td className="p-4">{session.mentor?.name || "-"}</td>
-                <td className="p-4">{new Date(session.createdAt).toLocaleString()}</td>
+                <td className="p-4">
+                  {new Date(session.startsAt || session.createdAt).toLocaleString()}
+                </td>
                 <td className="p-4">
                   <span
                     className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusStyle(
                       session.status
                     )}`}
                   >
-                    {(session.status || "UNKNOWN").toLowerCase()}
+                    {getStatusLabel(session.status)}
                   </span>
                 </td>
               </tr>

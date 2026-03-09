@@ -59,17 +59,6 @@ export default function MentorDashboard() {
               Resources
             </NavLink>
 
-            <NavLink
-              to="messages"
-              className={({ isActive }) =>
-                `block px-4 py-3 rounded-lg ${
-                  isActive ? "bg-blue-900" : "hover:bg-blue-900"
-                }`
-              }
-            >
-              Messages
-            </NavLink>
-
           </nav>
         </div>
 

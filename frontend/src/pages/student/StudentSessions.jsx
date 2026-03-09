@@ -92,19 +92,37 @@ const StudentSessions = () => {
   };
 
   const getCountdownText = (session) => {
-    if (session.status !== "ACCEPTED" || !session.startsAt) return "";
+    if (!session.startsAt) return "Time not set";
     const startMs = new Date(session.startsAt).getTime();
-    if (Number.isNaN(startMs) || now >= startMs) return "";
+    const endMs = session.endsAt ? new Date(session.endsAt).getTime() : null;
+    if (Number.isNaN(startMs)) return "Time not set";
 
-    const diffMs = startMs - now;
-    const totalMinutes = Math.floor(diffMs / 60000);
-    const days = Math.floor(totalMinutes / (60 * 24));
-    const hours = Math.floor((totalMinutes % (60 * 24)) / 60);
-    const minutes = totalMinutes % 60;
+    if (session.status === "COMPLETED") return "Completed";
+    if (now < startMs) {
+      const diffMs = startMs - now;
+      const totalMinutes = Math.floor(diffMs / 60000);
+      const days = Math.floor(totalMinutes / (60 * 24));
+      const hours = Math.floor((totalMinutes % (60 * 24)) / 60);
+      const minutes = totalMinutes % 60;
 
-    if (days > 0) return `Starts in ${days}d ${hours}h ${minutes}m`;
-    if (hours > 0) return `Starts in ${hours}h ${minutes}m`;
-    return `Starts in ${minutes}m`;
+      if (days > 0) return `Starts in ${days}d ${hours}h ${minutes}m`;
+      if (hours > 0) return `Starts in ${hours}h ${minutes}m`;
+      return `Starts in ${minutes}m`;
+    }
+
+    if (endMs && !Number.isNaN(endMs) && now > endMs) return "Ended";
+    return "Started";
+  };
+
+  const getScheduleText = (session) => {
+    if (!session.startsAt) return "Schedule not set";
+    const startDate = new Date(session.startsAt);
+    if (Number.isNaN(startDate.getTime())) return "Schedule not set";
+    if (!session.endsAt) return startDate.toLocaleString();
+
+    const endDate = new Date(session.endsAt);
+    if (Number.isNaN(endDate.getTime())) return startDate.toLocaleString();
+    return `${startDate.toLocaleString()} - ${endDate.toLocaleTimeString()}`;
   };
 
   if (loading) return <div className="p-6 text-center">Loading sessions...</div>;
@@ -131,22 +149,20 @@ const StudentSessions = () => {
 
                 <p className="text-gray-600 text-sm">with {session.mentor?.name || "Mentor"}</p>
 
-                <p className="text-gray-600 text-sm">
-                  {new Date(session.createdAt).toLocaleDateString()} | Mentoring Session
-                </p>
-
-                {session.startsAt && session.endsAt && (
-                  <p className="text-gray-700 text-sm">
-                    Scheduled: {new Date(session.startsAt).toLocaleString()} -{" "}
-                    {new Date(session.endsAt).toLocaleTimeString()}
+                  <p className="text-gray-600 text-sm">
+                    {new Date(session.createdAt).toLocaleDateString()} | Mentoring Session
                   </p>
-                )}
+
+                  <p className="text-gray-700 text-sm">
+                    Scheduled: {getScheduleText(session)}
+                  </p>
+
+                  <p className="text-xs text-amber-600">
+                    {getCountdownText(session)}
+                  </p>
 
                   {session.status === "ACCEPTED" && (
                     <div className="pt-1">
-                      {getCountdownText(session) && (
-                        <p className="text-xs text-amber-600 mb-1">{getCountdownText(session)}</p>
-                      )}
                       <button
                         type="button"
                         disabled={!joinMeta.canJoin}

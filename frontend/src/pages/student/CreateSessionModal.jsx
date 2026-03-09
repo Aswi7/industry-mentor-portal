@@ -1,7 +1,10 @@
 import { useState } from "react";
 import { X, Calendar, Clock } from "lucide-react";
 
-const CreateSessionModal = ({ onClose, onCreate }) => {
+const CreateSessionModal = ({
+  onClose,
+  onCreate,
+}) => {
   // form state
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
