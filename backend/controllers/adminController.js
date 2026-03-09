@@ -74,6 +74,23 @@ const getAllUsers = async (req, res) => {
 // Get all sessions for admin sessions page
 const getAllSessions = async (req, res) => {
   try {
+    const now = new Date();
+    await Session.updateMany(
+      {
+        status: { $in: ["OPEN", "REQUESTED", "ACCEPTED"] },
+        $or: [
+          { endsAt: { $type: "date", $lt: now } },
+          {
+            $and: [
+              { $or: [{ endsAt: { $exists: false } }, { endsAt: null }] },
+              { startsAt: { $type: "date", $lt: now } },
+            ],
+          },
+        ],
+      },
+      { $set: { status: "COMPLETED" } }
+    );
+
     const sessions = await Session.find({})
       .populate("mentor", "name email")
       .populate("student", "name email")

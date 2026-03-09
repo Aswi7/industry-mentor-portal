@@ -2,6 +2,25 @@ const Session = require("../models/Session");
 const User = require("../models/User");
 const { google } = require("googleapis");
 
+const markExpiredSessionsAsCompleted = async () => {
+  const now = new Date();
+  await Session.updateMany(
+    {
+      status: { $in: ["OPEN", "REQUESTED", "ACCEPTED"] },
+      $or: [
+        { endsAt: { $type: "date", $lt: now } },
+        {
+          $and: [
+            { $or: [{ endsAt: { $exists: false } }, { endsAt: null }] },
+            { startsAt: { $type: "date", $lt: now } },
+          ],
+        },
+      ],
+    },
+    { $set: { status: "COMPLETED" } }
+  );
+};
+
 const createGoogleMeetForSession = async ({ mentor, student, session, startsAt, endsAt }) => {
   if (!mentor?.googleRefreshToken) {
     throw new Error("Google Calendar not connected. Connect your Google account first.");
@@ -181,7 +200,8 @@ const mentorCancelSession = async (req, res) => {
       return res.status(400).json({ message: "Completed sessions cannot be canceled" });
     }
 
-    await Session.deleteOne({ _id: session._id });
+    session.status = "CANCELED";
+    await session.save();
 
     return res.status(200).json({ message: "Session canceled successfully" });
   } catch (err) {
@@ -275,7 +295,10 @@ const rejectSession = async (req, res) => {
 // GET ALL SESSIONS FOR A MENTOR
 const getMentorSessions = async (req, res) => {
   try {
-    const sessions = await Session.find({ mentor: req.user.id });
+    await markExpiredSessionsAsCompleted();
+
+    const sessions = await Session.find({ mentor: req.user.id })
+      .populate("student", "name email");
 
     res.status(200).json({ sessions });
   } catch (err) {
@@ -286,6 +309,8 @@ const getMentorSessions = async (req, res) => {
 
 const getStudentSessions = async (req, res) => {
   try {
+    await markExpiredSessionsAsCompleted();
+
     const sessions = await Session.find({ student: req.user.id })
       .populate("mentor", "name email")
       .populate("student", "name email");
@@ -299,6 +324,8 @@ const getStudentSessions = async (req, res) => {
 
 const getOpenSessionsForStudents = async (req, res) => {
   try {
+    await markExpiredSessionsAsCompleted();
+
     const sessions = await Session.find({ status: "OPEN" })
       .populate("mentor", "name email skills domain")
       .sort({ createdAt: -1 });

@@ -18,7 +18,7 @@ const sessionSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ["OPEN", "REQUESTED", "ACCEPTED", "REJECTED", "COMPLETED"],
+    enum: ["OPEN", "REQUESTED", "ACCEPTED", "REJECTED", "COMPLETED", "CANCELED"],
     default: "OPEN"
   },
   startsAt: {

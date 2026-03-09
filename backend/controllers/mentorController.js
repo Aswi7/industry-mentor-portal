@@ -1,6 +1,25 @@
 const User = require("../models/User");
 const Session = require("../models/Session");
 
+const markExpiredSessionsAsCompleted = async () => {
+  const now = new Date();
+  await Session.updateMany(
+    {
+      status: { $in: ["OPEN", "REQUESTED", "ACCEPTED"] },
+      $or: [
+        { endsAt: { $type: "date", $lt: now } },
+        {
+          $and: [
+            { $or: [{ endsAt: { $exists: false } }, { endsAt: null }] },
+            { startsAt: { $type: "date", $lt: now } },
+          ],
+        },
+      ],
+    },
+    { $set: { status: "COMPLETED" } }
+  );
+};
+
 // Get mentor profile
 const getMentorProfile = async (req, res) => {
   try {
@@ -41,6 +60,7 @@ const updateMentorProfile = async (req, res) => {
 const getMentorStats = async (req, res) => {
   try {
     const mentorId = req.user.id;
+    await markExpiredSessionsAsCompleted();
 
     // Get all sessions for this mentor
     const allSessions = await Session.find({ mentor: mentorId }).populate("student", "name email");
@@ -82,6 +102,7 @@ const getMentorStats = async (req, res) => {
 const getMentorSessions = async (req, res) => {
   try {
     const mentorId = req.user.id;
+    await markExpiredSessionsAsCompleted();
 
     const sessions = await Session.find({ mentor: mentorId })
       .populate("student", "name email skills domain")
