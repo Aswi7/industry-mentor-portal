@@ -59,6 +59,7 @@ const createGoogleMeetForSession = async ({ mentor, student, session, startsAt, 
       conferenceData: {
         createRequest: {
           requestId,
+          conferenceSolutionKey: { type: "hangoutsMeet" },
         },
       },
     },
@@ -158,26 +159,31 @@ const createSessionByMentor = async (req, res) => {
       status: "OPEN"
     });
 
-    const { meetingLink, googleEventId } = await createGoogleMeetForSession({
-      mentor,
-      student: null,
-      session,
-      startsAt: startInput,
-      endsAt: endInput,
-    });
+    // Google Meet is optional: create it only when Calendar is connected and OAuth is configured.
+    if (mentor.googleRefreshToken) {
+      try {
+        const { meetingLink, googleEventId } = await createGoogleMeetForSession({
+          mentor,
+          student: null,
+          session,
+          startsAt: startInput,
+          endsAt: endInput,
+        });
 
-    session.meetingLink = meetingLink;
-    session.googleEventId = googleEventId;
-    await session.save();
+        session.meetingLink = meetingLink;
+        session.googleEventId = googleEventId;
+        await session.save();
+      } catch (googleErr) {
+        // Don't block scheduling if Google Meet creation fails.
+        console.warn("Google Meet creation skipped:", googleErr?.message || googleErr);
+      }
+    }
 
     return res.status(201).json({ message: "Open session created", session });
   } catch (err) {
     console.error(err);
-    if (err.message === "Google Calendar not connected. Connect your Google account first.") {
+    if (err?.name === "ValidationError" || err?.name === "CastError") {
       return res.status(400).json({ message: err.message });
-    }
-    if (err.message === "Google auth is not configured") {
-      return res.status(500).json({ message: err.message });
     }
     return res.status(500).json({ message: "Server error" });
   }
@@ -254,6 +260,35 @@ const acceptSession = async (req, res) => {
     }
 
     session.status = "ACCEPTED";
+
+    // Best-effort: create Google Meet after a student is assigned (even if a previous fallback link exists).
+    if (!session.googleEventId && session.startsAt && session.endsAt) {
+      const startInput = new Date(session.startsAt);
+      const endInput = new Date(session.endsAt);
+
+      if (!Number.isNaN(startInput.getTime()) && !Number.isNaN(endInput.getTime()) && endInput > startInput) {
+        const mentor = await User.findById(req.user.id).select("name email googleRefreshToken");
+        const student = await User.findById(session.student).select("name email");
+
+        if (mentor?.googleRefreshToken) {
+          try {
+            const { meetingLink, googleEventId } = await createGoogleMeetForSession({
+              mentor,
+              student,
+              session,
+              startsAt: startInput,
+              endsAt: endInput,
+            });
+
+            session.meetingLink = meetingLink;
+            session.googleEventId = googleEventId;
+          } catch (googleErr) {
+            console.warn("Google Meet creation skipped:", googleErr?.message || googleErr);
+          }
+        }
+      }
+    }
+
     await session.save();
 
     res.json({ message: "Session accepted", session });
@@ -299,6 +334,46 @@ const getMentorSessions = async (req, res) => {
 
     const sessions = await Session.find({ mentor: req.user.id })
       .populate("student", "name email");
+
+    // Backfill missing Meet links for accepted sessions (best-effort) so "Join" can appear.
+    const mentor = await User.findById(req.user.id).select("name email googleRefreshToken");
+    if (mentor?.googleRefreshToken) {
+      const now = Date.now();
+      let attempts = 0;
+
+      for (const session of sessions) {
+        if (attempts >= 5) break;
+        if (session.status !== "ACCEPTED") continue;
+        if (session.googleEventId) continue;
+        if (!session.startsAt || !session.endsAt) continue;
+
+        const startMs = new Date(session.startsAt).getTime();
+        const endMs = new Date(session.endsAt).getTime();
+        if (Number.isNaN(startMs) || Number.isNaN(endMs) || endMs <= startMs) continue;
+
+        // Only attempt near the scheduled window (30m before start -> 60m after end).
+        if (now < startMs - 30 * 60 * 1000) continue;
+        if (now > endMs + 60 * 60 * 1000) continue;
+
+        try {
+          const { meetingLink, googleEventId } = await createGoogleMeetForSession({
+            mentor,
+            student: session.student || null,
+            session,
+            startsAt: new Date(session.startsAt),
+            endsAt: new Date(session.endsAt),
+          });
+
+          session.meetingLink = meetingLink;
+          session.googleEventId = googleEventId;
+          await session.save();
+          attempts += 1;
+        } catch (googleErr) {
+          console.warn("Google Meet backfill skipped:", googleErr?.message || googleErr);
+          attempts += 1;
+        }
+      }
+    }
 
     res.status(200).json({ sessions });
   } catch (err) {

@@ -17,12 +17,13 @@ const resolveUserFromToken = (token) => {
 const registerUser = async (req, res) => {
   try {
     const { name, email, password, role, skills, domain, studentSkills, studentDomain, phone } = req.body;
+    const normalizedEmail = String(email || "").trim().toLowerCase();
 
-    if (!name || !email || !password) {
+    if (!name || !normalizedEmail || !password) {
       return res.status(400).json({ message: "All fields required" });
     }
 
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({ email: normalizedEmail });
     if (existingUser) {
       return res.status(400).json({ message: "Email already registered" });
     }
@@ -31,7 +32,7 @@ const registerUser = async (req, res) => {
 
     const user = await User.create({
       name,
-      email,
+      email: normalizedEmail,
       phone,
       password: hashedPassword,
       role: role || "STUDENT",
@@ -422,7 +423,12 @@ const loginUser = async (req, res) => {
   try {
     const { email, password, role } = req.body;
 
-    const user = await User.findOne({ email });
+    const normalizedEmail = String(email || "").trim().toLowerCase();
+    if (!normalizedEmail || !password) {
+      return res.status(400).json({ message: "All fields required" });
+    }
+
+    const user = await User.findOne({ email: normalizedEmail });
     if (!user)
       return res.status(400).json({ message: "Invalid credentials" });
 

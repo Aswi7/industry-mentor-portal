@@ -1,5 +1,6 @@
 const User = require("../models/User");
 const Session = require("../models/Session");
+const { google } = require("googleapis");
 
 const markExpiredSessionsAsCompleted = async () => {
   const now = new Date();
@@ -18,6 +19,59 @@ const markExpiredSessionsAsCompleted = async () => {
     },
     { $set: { status: "COMPLETED" } }
   );
+};
+
+const createGoogleMeetForSession = async ({ mentor, student, session, startsAt, endsAt }) => {
+  if (!mentor?.googleRefreshToken) {
+    throw new Error("Google Calendar not connected. Connect your Google account first.");
+  }
+
+  const clientId = process.env.GOOGLE_CLIENT_ID || process.env.CLIENT_ID;
+  const clientSecret = process.env.GOOGLE_CLIENT_SECRET || process.env.CLIENT_SECRET;
+  const redirectUri =
+    process.env.GOOGLE_CALENDAR_REDIRECT_URI ||
+    process.env.GOOGLE_REDIRECT_URI ||
+    "http://localhost:5000/api/auth/google/calendar/callback";
+
+  if (!clientId || !clientSecret) {
+    throw new Error("Google auth is not configured");
+  }
+
+  const oauth2Client = new google.auth.OAuth2(clientId, clientSecret, redirectUri);
+  oauth2Client.setCredentials({ refresh_token: mentor.googleRefreshToken });
+
+  const calendar = google.calendar({ version: "v3", auth: oauth2Client });
+  const requestId = `mentor-session-${session._id}-${Date.now()}`;
+
+  const event = await calendar.events.insert({
+    calendarId: "primary",
+    conferenceDataVersion: 1,
+    requestBody: {
+      summary: `Mentor Session: ${session.topic}`,
+      description: `Mentor: ${mentor.name}\nStudent: ${student?.name || "N/A"}`,
+      start: {
+        dateTime: startsAt.toISOString(),
+      },
+      end: {
+        dateTime: endsAt.toISOString(),
+      },
+      attendees: student?.email ? [{ email: student.email }] : [],
+      conferenceData: {
+        createRequest: {
+          requestId,
+          conferenceSolutionKey: { type: "hangoutsMeet" },
+        },
+      },
+    },
+  });
+
+  return {
+    meetingLink:
+      event.data?.hangoutLink ||
+      event.data?.conferenceData?.entryPoints?.find((entry) => entry.entryPointType === "video")?.uri ||
+      "",
+    googleEventId: event.data?.id || "",
+  };
 };
 
 // Get mentor profile
@@ -107,6 +161,42 @@ const getMentorSessions = async (req, res) => {
     const sessions = await Session.find({ mentor: mentorId })
       .populate("student", "name email skills domain")
       .sort({ createdAt: -1 });
+
+    // Best-effort backfill for accepted sessions missing a Meet link.
+    const mentor = await User.findById(mentorId).select("name email googleRefreshToken");
+    if (mentor?.googleRefreshToken) {
+      let attempts = 0;
+      for (const session of sessions) {
+        if (attempts >= 5) break;
+        if (session.status !== "ACCEPTED") continue;
+        if (session.meetingLink && session.googleEventId) continue;
+        if (!session.startsAt || !session.endsAt) continue;
+
+        const startInput = new Date(session.startsAt);
+        const endInput = new Date(session.endsAt);
+        if (Number.isNaN(startInput.getTime()) || Number.isNaN(endInput.getTime()) || endInput <= startInput) {
+          continue;
+        }
+
+        try {
+          const { meetingLink, googleEventId } = await createGoogleMeetForSession({
+            mentor,
+            student: session.student || null,
+            session,
+            startsAt: startInput,
+            endsAt: endInput,
+          });
+
+          if (meetingLink) session.meetingLink = meetingLink;
+          if (googleEventId) session.googleEventId = googleEventId;
+          await session.save();
+          attempts += 1;
+        } catch (googleErr) {
+          console.warn("Google Meet backfill skipped:", googleErr?.message || googleErr);
+          attempts += 1;
+        }
+      }
+    }
 
     res.status(200).json({ sessions });
   } catch (err) {
