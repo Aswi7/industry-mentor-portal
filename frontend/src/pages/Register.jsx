@@ -54,7 +54,7 @@ function Register() {
         if (mentorStatus === "VERIFIED" || mentorStatus === "ACTIVE") {
           navigate("/mentor")
         } else {
-          navigate("/mentor/pending")
+          navigate("/mentor/profile")
         }
       } else if (role.toUpperCase() === "STUDENT") {
         navigate("/student")

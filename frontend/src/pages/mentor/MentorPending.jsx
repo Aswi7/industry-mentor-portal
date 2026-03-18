@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import API from "../../services/api";
 
 const isMentorApproved = (status) => ["VERIFIED", "ACTIVE"].includes(status);
 
 export default function MentorPending() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [adminEmail, setAdminEmail] = useState("");
@@ -17,6 +19,8 @@ export default function MentorPending() {
       return {};
     }
   });
+
+  const submitted = new URLSearchParams(location.search).get("submitted") === "1";
 
   const signOut = () => {
     localStorage.removeItem("token");
@@ -70,6 +74,11 @@ export default function MentorPending() {
   return (
     <div className="min-h-screen bg-slate-100 flex items-center justify-center px-4">
       <div className="w-full max-w-2xl bg-white rounded-2xl shadow p-8">
+        {submitted && (
+          <div className="mb-6 p-4 rounded-xl bg-green-50 border border-green-200 text-green-700 text-center">
+            Profile submitted for approval. Please wait for admin verification.
+          </div>
+        )}
         {user?.mentorStatus === "REJECTED" ? (
           <div className="text-center mb-8">
             <div className="mx-auto w-16 h-16 rounded-full bg-red-100 text-red-600 flex items-center justify-center text-2xl mb-4">
@@ -113,6 +122,12 @@ export default function MentorPending() {
         {error && <p className="text-red-600 text-sm mt-4 text-center">{error}</p>}
 
         <div className="mt-6 flex justify-center gap-3">
+          <button
+            onClick={() => navigate("/mentor/profile")}
+            className="px-5 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700"
+          >
+            Edit Profile
+          </button>
           <button
             onClick={() => window.location.reload()}
             disabled={loading}

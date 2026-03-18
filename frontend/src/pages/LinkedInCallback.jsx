@@ -32,7 +32,7 @@ const LinkedInCallback = () => {
         if (mentorStatus === "VERIFIED" || mentorStatus === "ACTIVE") {
           navigate("/mentor", { replace: true });
         } else {
-          navigate("/mentor/pending", { replace: true });
+          navigate("/mentor/profile", { replace: true });
         }
       }
       else if (role === "admin") navigate("/admin", { replace: true });

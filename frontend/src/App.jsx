@@ -11,6 +11,7 @@ import MentorSessions from "./pages/mentor/MentorSessions"
 import MentorResources from "./pages/mentor/MentorResources"
 import MentorMentees from "./pages/mentor/MentorMentees"
 import MentorPending from "./pages/mentor/MentorPending"
+import MentorProfile from "./pages/mentor/MentorProfile"
 
 
 import StudentDashboard from "./pages/student/StudentDashboard"
@@ -51,6 +52,12 @@ const MentorPendingGuard = ({ children }) => {
   return children
 }
 
+const MentorRoleGuard = ({ children }) => {
+  const user = getStoredUser()
+  if (!user || user.role !== "MENTOR") return <Navigate to="/" replace />
+  return children
+}
+
 function App() {
   return (
     <Routes>
@@ -60,6 +67,14 @@ function App() {
       <Route path="/register" element={<Register />} />
       <Route path="/auth/linkedin/callback" element={<LinkedInCallback />} />
       <Route path="/auth/google/calendar/callback" element={<GoogleCalendarCallback />} />
+      <Route
+        path="/mentor/profile"
+        element={
+          <MentorRoleGuard>
+            <MentorProfile />
+          </MentorRoleGuard>
+        }
+      />
       <Route
         path="/mentor/pending"
         element={
