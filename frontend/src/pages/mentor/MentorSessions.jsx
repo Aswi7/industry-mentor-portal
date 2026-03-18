@@ -84,6 +84,22 @@ const MentorSessions = () => {
     return date.toLocaleString();
   };
 
+  const getJoinMeta = (session) => {
+    if (!session?.meetingLink || session.status !== "ACCEPTED") {
+      return { canJoin: false };
+    }
+
+    const startTs = session.startsAt ? new Date(session.startsAt).getTime() : NaN;
+    const endTs = session.endsAt ? new Date(session.endsAt).getTime() : null;
+    const graceAfterEndMs = 60 * 60 * 1000;
+
+    if (Number.isNaN(startTs)) return { canJoin: false };
+    if (nowTs < startTs) return { canJoin: false };
+    if (endTs && !Number.isNaN(endTs) && nowTs > endTs + graceAfterEndMs) return { canJoin: false };
+
+    return { canJoin: true };
+  };
+
   const connectGoogleCalendar = () => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -182,13 +198,15 @@ const MentorSessions = () => {
       {/* Session Cards */}
       <div className="space-y-6">
         {upcomingSessions.length > 0 ? (
-          upcomingSessions.map((session) => (
-            <div
-              key={session._id}
-              className="bg-white p-6 rounded-xl shadow-sm border hover:shadow-md transition"
-            >
-              {/* Top Row */}
-              <div className="flex justify-between items-start">
+          upcomingSessions.map((session) => {
+            const joinMeta = getJoinMeta(session);
+            return (
+              <div
+                key={session._id}
+                className="bg-white p-6 rounded-xl shadow-sm border hover:shadow-md transition"
+              >
+                {/* Top Row */}
+                <div className="flex justify-between items-start">
                 <div>
                   <div className="flex items-center gap-3">
                     <h3 className="text-lg font-semibold text-gray-800">
@@ -213,7 +231,7 @@ const MentorSessions = () => {
 
                 {/* Status Badge */}
                 <div className="flex gap-2">
-                  {!session.meetingLink && (
+                  {(!isCalendarConnected || !session.googleEventId) && (
                     <button
                       onClick={connectGoogleCalendar}
                       disabled={connecting}
@@ -224,6 +242,15 @@ const MentorSessions = () => {
                       }`}
                     >
                       {connecting ? "Redirecting..." : isCalendarConnected ? "Reconnect Calendar" : "Connect Calendar"}
+                    </button>
+                  )}
+                  {joinMeta.canJoin && (
+                    <button
+                      type="button"
+                      onClick={() => window.open(session.meetingLink, "_blank", "noopener,noreferrer")}
+                      className="bg-blue-600 text-white px-3 py-1 text-sm rounded-full hover:bg-blue-700 transition"
+                    >
+                      Join Now
                     </button>
                   )}
                   <button
@@ -247,19 +274,10 @@ const MentorSessions = () => {
                 <div className="font-medium text-blue-700">
                   Starts in: {formatCountdown(session.startsAt)}
                 </div>
-                {session.meetingLink && (
-                  <a
-                    href={session.meetingLink}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-blue-600 hover:text-blue-800 font-medium"
-                  >
-                    Open Meet
-                  </a>
-                )}
               </div>
-            </div>
-          ))
+              </div>
+            );
+          })
         ) : (
           <div className="bg-white p-6 rounded-xl text-center text-gray-400">
             No upcoming sessions

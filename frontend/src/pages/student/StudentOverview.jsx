@@ -8,6 +8,7 @@ const StudentOverview = () => {
   const [upcomingSessions, setUpcomingSessions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [nowTs, setNowTs] = useState(Date.now());
 
   useEffect(() => {
     const fetchData = async () => {
@@ -40,6 +41,22 @@ const StudentOverview = () => {
 
     fetchData();
   }, []);
+
+  useEffect(() => {
+    const timer = setInterval(() => setNowTs(Date.now()), 30000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const canJoinSession = (session) => {
+    if (!session?.meetingLink || session.status !== "ACCEPTED") return false;
+    const startTs = session.startsAt ? new Date(session.startsAt).getTime() : NaN;
+    const endTs = session.endsAt ? new Date(session.endsAt).getTime() : null;
+    const graceAfterEndMs = 60 * 60 * 1000;
+    if (Number.isNaN(startTs)) return false;
+    if (nowTs < startTs) return false;
+    if (endTs && !Number.isNaN(endTs) && nowTs > endTs + graceAfterEndMs) return false;
+    return true;
+  };
 
   if (loading) return <div className="text-center py-10">Loading...</div>;
   if (error) return <div className="text-red-500 py-10">{error}</div>;
@@ -134,9 +151,19 @@ const StudentOverview = () => {
                     with {session.mentor.name}
                   </p>
                 </div>
-                <span className="bg-blue-100 text-blue-600 text-xs font-medium px-3 py-1 rounded-full">
-                  Scheduled
-                </span>
+                {canJoinSession(session) ? (
+                  <button
+                    type="button"
+                    onClick={() => window.open(session.meetingLink, "_blank", "noopener,noreferrer")}
+                    className="bg-blue-600 text-white text-xs font-medium px-3 py-1 rounded-full hover:bg-blue-700 transition"
+                  >
+                    Join Now
+                  </button>
+                ) : (
+                  <span className="bg-blue-100 text-blue-600 text-xs font-medium px-3 py-1 rounded-full">
+                    Scheduled
+                  </span>
+                )}
               </div>
             ))
           ) : (

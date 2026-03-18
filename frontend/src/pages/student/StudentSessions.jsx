@@ -75,6 +75,7 @@ const StudentSessions = () => {
 
     const startMs = session.startsAt ? new Date(session.startsAt).getTime() : null;
     const endMs = session.endsAt ? new Date(session.endsAt).getTime() : null;
+    const graceAfterEndMs = 60 * 60 * 1000;
 
     if (!startMs || Number.isNaN(startMs)) {
       return { canJoin: false, label: "Join Unavailable", hint: "Waiting for mentor schedule" };
@@ -84,7 +85,7 @@ const StudentSessions = () => {
       return { canJoin: false, label: "Join (Locked)", hint: "Enabled at scheduled start time" };
     }
 
-    if (endMs && !Number.isNaN(endMs) && now > endMs) {
+    if (endMs && !Number.isNaN(endMs) && now > endMs + graceAfterEndMs) {
       return { canJoin: false, label: "Session Ended", hint: "Join window is closed" };
     }
 
