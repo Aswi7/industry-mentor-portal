@@ -46,6 +46,18 @@ const userSchema = new mongoose.Schema({
     default: "STUDENT", // Default role is Student
   },
   // Only for mentors
+  company: {
+    type: String,
+    trim: true,
+  },
+  designation: {
+    type: String,
+    trim: true,
+  },
+  yearsOfExperience: {
+    type: Number,
+    min: 0,
+  },
   skills: {
     type: [String], // Array of skills for mentor search
   },
