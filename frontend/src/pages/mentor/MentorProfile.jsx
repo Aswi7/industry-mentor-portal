@@ -23,21 +23,27 @@ const getInitials = (name) => {
 
 export default function MentorProfile() {
   const navigate = useNavigate();
+  const storedUser = useMemo(() => getStoredUser() || {}, []);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
-  const [mentor, setMentor] = useState(() => getStoredUser() || {});
-  const [skills, setSkills] = useState(() => Array.isArray(getStoredUser()?.skills) ? getStoredUser().skills : []);
+  const [mentor, setMentor] = useState(() => storedUser);
+  const [skills, setSkills] = useState(() => (Array.isArray(storedUser.skills) ? storedUser.skills : []));
   const [skillInput, setSkillInput] = useState("");
 
-  const [company, setCompany] = useState("");
-  const [designation, setDesignation] = useState("");
-  const [yearsOfExperience, setYearsOfExperience] = useState("");
-  const [domain, setDomain] = useState("");
-  const [bio, setBio] = useState("");
-  const [phone, setPhone] = useState("");
+  const [company, setCompany] = useState(() => storedUser.company ?? "");
+  const [designation, setDesignation] = useState(() => storedUser.designation ?? "");
+  const [yearsOfExperience, setYearsOfExperience] = useState(() => {
+    if (storedUser.yearsOfExperience === 0 || storedUser.yearsOfExperience) {
+      return String(storedUser.yearsOfExperience);
+    }
+    return "";
+  });
+  const [domain, setDomain] = useState(() => storedUser.domain ?? "");
+  const [bio, setBio] = useState(() => storedUser.bio ?? "");
+  const [phone, setPhone] = useState(() => storedUser.phone ?? "");
 
   const [profileFile, setProfileFile] = useState(null);
   const [profilePreview, setProfilePreview] = useState("");
@@ -368,14 +374,6 @@ export default function MentorProfile() {
         </div>
 
         <div className="flex justify-end gap-3 mt-6">
-          <button
-            type="button"
-            onClick={() => saveProfile({ quiet: false })}
-            disabled={saving || submitting}
-            className="px-5 py-2 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 disabled:opacity-60"
-          >
-            {saving ? "Saving..." : "Save Draft"}
-          </button>
           <button
             type="button"
             onClick={submitForApproval}
