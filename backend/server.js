@@ -21,6 +21,7 @@ const mentorRoutes = require("./routes/mentorRoutes");
 const studentRoutes = require("./routes/studentRoutes"); 
 const sessionRoutes = require("./routes/sessionRoutes");
 const resourceRoutes = require("./routes/resourceRoutes");
+const { markExpiredSessionsAsCompleted } = require("./services/sessionStatus");
 // ✅ ADD THIS
 
 app.use("/api/auth", authRoutes);
@@ -41,7 +42,29 @@ app.get("/", (req, res) => {
 // 4️⃣ MongoDB connection
 mongoose
   .connect(process.env.MONGO_URI)
-  .then(() => console.log("MongoDB connected successfully"))
+  .then(async () => {
+    console.log("MongoDB connected successfully");
+
+    // Auto-complete sessions once they pass their scheduled end time.
+    const intervalMs = Number(process.env.SESSION_AUTO_COMPLETE_INTERVAL_MS || 60000);
+    if (intervalMs > 0) {
+      try {
+        await markExpiredSessionsAsCompleted();
+      } catch (err) {
+        console.warn("Session auto-complete (startup) failed:", err?.message || err);
+      }
+
+      const timer = setInterval(async () => {
+        try {
+          await markExpiredSessionsAsCompleted();
+        } catch (err) {
+          console.warn("Session auto-complete failed:", err?.message || err);
+        }
+      }, intervalMs);
+
+      timer.unref?.();
+    }
+  })
   .catch((err) =>
     console.error("❌ MongoDB connection error:", err.message)
   );

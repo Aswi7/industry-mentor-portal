@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { protect, mentorOnly } = require("../middleware/authMiddleware");
+const { protect, mentorOnly, mentorRoleOnly } = require("../middleware/authMiddleware");
 const { upload } = require("../middleware/upload");
 const { 
   updateMentorProfile, 
@@ -14,12 +14,12 @@ const {
 } = require("../controllers/mentorController");
 
 // GET own profile
-router.get("/profile", protect, mentorOnly, getMentorProfile);
+router.get("/profile", protect, mentorRoleOnly, getMentorProfile);
 
 // PUT update profile
-router.put("/profile", protect, mentorOnly, updateMentorProfile);
-router.post("/profile-picture", protect, mentorOnly, upload.single("profilePicture"), uploadMentorProfilePicture);
-router.put("/submit-for-approval", protect, mentorOnly, submitMentorForApproval);
+router.put("/profile", protect, mentorRoleOnly, updateMentorProfile);
+router.post("/profile-picture", protect, mentorRoleOnly, upload.single("profilePicture"), uploadMentorProfilePicture);
+router.put("/submit-for-approval", protect, mentorRoleOnly, submitMentorForApproval);
 
 // GET mentor dashboard stats
 router.get("/stats", protect, mentorOnly, getMentorStats);

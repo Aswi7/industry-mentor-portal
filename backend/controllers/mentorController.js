@@ -1,25 +1,7 @@
 const User = require("../models/User");
 const Session = require("../models/Session");
 const { google } = require("googleapis");
-
-const markExpiredSessionsAsCompleted = async () => {
-  const now = new Date();
-  await Session.updateMany(
-    {
-      status: { $in: ["OPEN", "REQUESTED", "ACCEPTED"] },
-      $or: [
-        { endsAt: { $type: "date", $lt: now } },
-        {
-          $and: [
-            { $or: [{ endsAt: { $exists: false } }, { endsAt: null }] },
-            { startsAt: { $type: "date", $lt: now } },
-          ],
-        },
-      ],
-    },
-    { $set: { status: "COMPLETED" } }
-  );
-};
+const { markExpiredSessionsAsCompleted } = require("../services/sessionStatus");
 
 const createGoogleMeetForSession = async ({ mentor, student, session, startsAt, endsAt }) => {
   if (!mentor?.googleRefreshToken) {

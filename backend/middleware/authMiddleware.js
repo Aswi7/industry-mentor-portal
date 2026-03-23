@@ -55,6 +55,15 @@ const adminOnly = (req, res, next) => {
 /**
  * 🧑‍🏫 Mentor-only access
  */
+const mentorRoleOnly = (req, res, next) => {
+  if (req.user && req.user.role === "MENTOR") {
+    return next();
+  }
+  return res.status(403).json({
+    message: "Access denied: Mentor only",
+  });
+};
+
 const mentorOnly = async (req, res, next) => {
   if (!req.user || req.user.role !== "MENTOR") {
     return res.status(403).json({
@@ -97,6 +106,7 @@ const studentOnly = (req, res, next) => {
 module.exports = {
   protect,
   adminOnly,
+  mentorRoleOnly,
   mentorOnly,
   studentOnly,
 };
