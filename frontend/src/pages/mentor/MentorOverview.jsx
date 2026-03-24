@@ -90,19 +90,10 @@ export default function MentorOverview() {
           <h1 className="text-4xl font-display font-extrabold text-gray-900">
             Welcome back, {mentorName.split(' ')[0]}!
           </h1>
-          <p className="text-gray-500 mt-2 flex items-center gap-2">
-            <Calendar size={16} className="text-gray-400" />
+          <p className="text-gray-700 mt-2 flex items-center gap-2">
+            <Calendar size={16} className="text-gray-600" />
             {formattedDate}
           </p>
-        </div>
-        <div className="flex gap-3">
-          <button className="btn-secondary flex items-center gap-2 text-sm py-2">
-            Download Report
-          </button>
-          <button className="btn-primary flex items-center gap-2 text-sm py-2 shadow-blue-500/20">
-            <Calendar size={16} />
-            View Schedule
-          </button>
         </div>
       </header>
 
@@ -153,7 +144,7 @@ export default function MentorOverview() {
           <div className="overflow-x-auto">
             <table className="w-full text-left">
               <thead>
-                <tr className="text-[11px] font-bold text-gray-400 uppercase tracking-widest border-b border-gray-50">
+                <tr className="text-[11px] font-bold text-gray-600 uppercase tracking-widest border-b border-gray-50">
                   <th className="px-8 py-4">Topic & Student</th>
                   <th className="px-6 py-4">Date & Time</th>
                   <th className="px-6 py-4">Type</th>
@@ -171,7 +162,7 @@ export default function MentorOverview() {
                           </div>
                           <div>
                             <p className="text-sm font-bold text-gray-900 group-hover:text-blue-600 transition-colors">{session.topic}</p>
-                            <p className="text-xs text-gray-500">with {session.student?.name || "TBD Student"}</p>
+                            <p className="text-xs text-gray-700">with {session.student?.name || "TBD Student"}</p>
                           </div>
                         </div>
                       </td>
@@ -179,7 +170,7 @@ export default function MentorOverview() {
                         <p className="text-sm font-semibold text-gray-700">
                           {new Date(session.startsAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                         </p>
-                        <p className="text-xs text-gray-400">
+                        <p className="text-xs text-gray-600">
                           {new Date(session.startsAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </p>
                       </td>
@@ -189,7 +180,7 @@ export default function MentorOverview() {
                             ₹{session.price}
                           </span>
                         ) : (
-                          <span className="bg-gray-50 text-gray-500 text-[10px] font-bold px-2.5 py-1 rounded-lg border border-gray-100 uppercase">
+                          <span className="bg-gray-50 text-gray-700 text-[10px] font-bold px-2.5 py-1 rounded-lg border border-gray-100 uppercase">
                             Free
                           </span>
                         )}
@@ -203,14 +194,14 @@ export default function MentorOverview() {
                             Join Now
                           </button>
                         ) : (
-                          <span className="text-[11px] font-bold text-gray-400 italic">Scheduled</span>
+                          <span className="text-[11px] font-bold text-gray-600 italic">Scheduled</span>
                         )}
                       </td>
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="4" className="px-8 py-10 text-center text-gray-400 italic text-sm">
+                    <td colSpan="4" className="px-8 py-10 text-center text-gray-600 italic text-sm">
                       No upcoming sessions for today.
                     </td>
                   </tr>
@@ -240,21 +231,21 @@ export default function MentorOverview() {
                       </div>
                       <div>
                         <p className="text-sm font-bold text-gray-900 truncate max-w-[120px]">{request.student?.name}</p>
-                        <p className="text-[10px] text-gray-400 uppercase font-bold">Student Request</p>
+                        <p className="text-[10px] text-gray-600 uppercase font-bold">Student Request</p>
                       </div>
                     </div>
                     <button className="text-gray-300 hover:text-gray-600 transition-colors">
                       <MoreHorizontal size={18} />
                     </button>
                   </div>
-                  <p className="text-xs font-semibold text-gray-600 mb-4 line-clamp-1 italic">
+                  <p className="text-xs font-semibold text-gray-700 mb-4 line-clamp-1 italic">
                     "{request.topic}"
                   </p>
                   <div className="flex gap-2">
                     <button className="flex-1 bg-primary-900 text-white text-[11px] font-bold py-2 rounded-xl hover:bg-primary-800 transition-colors">
                       Approve
                     </button>
-                    <button className="px-3 py-2 bg-gray-50 text-gray-400 rounded-xl hover:bg-red-50 hover:text-red-500 transition-all">
+                    <button className="px-3 py-2 bg-gray-50 text-gray-600 rounded-xl hover:bg-red-50 hover:text-red-500 transition-all">
                       <XIcon size={14} />
                     </button>
                   </div>
@@ -262,16 +253,16 @@ export default function MentorOverview() {
               ))
             ) : (
               <div className="flex flex-col items-center justify-center h-full py-10 text-center space-y-3">
-                <div className="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center text-gray-300">
+                <div className="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center text-gray-600">
                   <Clock size={24} />
                 </div>
-                <p className="text-gray-400 text-sm">Inbox is clear!</p>
+                <p className="text-gray-600 text-sm">Inbox is clear!</p>
               </div>
             )}
           </div>
           
           <div className="p-4 border-t border-gray-50">
-            <button className="w-full py-2 text-xs font-bold text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all">
+            <button className="w-full py-2 text-xs font-bold text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all">
               Manage All Requests
             </button>
           </div>
@@ -295,7 +286,7 @@ function StatWidget({ label, value, icon, trend, color, isAlert }) {
         {icon}
       </div>
       <div>
-        <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">{label}</p>
+        <p className="text-xs font-bold text-gray-600 uppercase tracking-widest mb-1">{label}</p>
         <div className="flex items-baseline gap-2">
           <h2 className="text-3xl font-display font-black text-gray-900">{value}</h2>
           {trend && (

@@ -70,7 +70,7 @@ export default function MentorMentees() {
       {/* Header */}
       <div>
         <h1 className="text-3xl font-extrabold text-gray-900">My Mentees</h1>
-        <p className="text-gray-500 mt-1 font-medium text-sm">Manage your active students and session requests</p>
+        <p className="text-gray-700 mt-1 font-medium text-sm">Manage your active students and session requests</p>
       </div>
 
       {/* Active Mentees Section */}
@@ -82,8 +82,8 @@ export default function MentorMentees() {
 
         {mentees.length === 0 ? (
           <div className="bg-white rounded-3xl border border-dashed border-gray-300 p-12 text-center">
-            <Users className="mx-auto text-gray-300 mb-4" size={48} />
-            <p className="text-gray-400 font-medium italic">No active mentees yet. Accept a request to get started!</p>
+            <Users className="mx-auto text-gray-600 mb-4" size={48} />
+            <p className="text-gray-600 font-medium italic">No active mentees yet. Accept a request to get started!</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -94,7 +94,7 @@ export default function MentorMentees() {
                 </div>
                 
                 <h3 className="text-lg font-bold text-gray-900">{mentee.name}</h3>
-                <div className="flex items-center gap-1.5 text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">
+                <div className="flex items-center gap-1.5 text-xs font-bold text-gray-600 uppercase tracking-widest mb-4">
                   <Mail size={12} />
                   {mentee.email}
                 </div>
@@ -103,7 +103,7 @@ export default function MentorMentees() {
                   <div className="flex items-center gap-3 bg-gray-50 p-2.5 rounded-xl text-left">
                     <BookOpen size={14} className="text-blue-500" />
                     <div>
-                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-tighter leading-none">Domain</p>
+                      <p className="text-[10px] font-black text-gray-600 uppercase tracking-tighter leading-none">Domain</p>
                       <p className="text-xs font-bold text-gray-700 mt-1">{mentee.studentDomain || "Not Specified"}</p>
                     </div>
                   </div>
@@ -129,7 +129,7 @@ export default function MentorMentees() {
 
         {pendingRequests.length === 0 ? (
           <div className="bg-white rounded-3xl border border-gray-100 p-8 text-center">
-            <p className="text-gray-400 text-sm font-medium">Inbox is clear. No new requests.</p>
+            <p className="text-gray-600 text-sm font-medium">Inbox is clear. No new requests.</p>
           </div>
         ) : (
           <div className="space-y-4">
@@ -141,7 +141,7 @@ export default function MentorMentees() {
                   </div>
                   <div>
                     <h3 className="font-bold text-gray-900">{request.student?.name}</h3>
-                    <p className="text-xs text-gray-500 font-medium">Requested: <span className="text-blue-600">"{request.topic}"</span></p>
+                    <p className="text-xs text-gray-700 font-medium">Requested: <span className="text-blue-600">"{request.topic}"</span></p>
                   </div>
                 </div>
 

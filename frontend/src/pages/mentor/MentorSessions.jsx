@@ -116,7 +116,7 @@ const MentorSessions = () => {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
           <h1 className="text-3xl font-extrabold text-gray-900">Session Management</h1>
-          <p className="text-gray-500 mt-1 text-sm font-medium">Create, track and manage your mentoring sessions</p>
+          <p className="text-gray-700 mt-1 text-sm font-medium">Create, track and manage your mentoring sessions</p>
         </div>
         <button
           onClick={() => setShowModal(true)}
@@ -157,8 +157,8 @@ const MentorSessions = () => {
                   </div>
 
                   <h3 className="text-xl font-bold text-gray-900 mb-1 line-clamp-1">{session.topic}</h3>
-                  <p className="text-sm font-medium text-gray-500 mb-6 flex items-center gap-1.5">
-                    <Users size={14} className="text-gray-400" />
+                  <p className="text-sm font-medium text-gray-700 mb-6 flex items-center gap-1.5">
+                    <Users size={14} className="text-gray-600" />
                     {session.student?.name || "Open Enrollment"}
                   </p>
 
@@ -194,7 +194,7 @@ const MentorSessions = () => {
                     )}
                     <button
                       onClick={() => handleCancelSession(session._id)}
-                      className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
+                      className="p-2 text-gray-600 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
                       title="Cancel Session"
                     >
                       <XCircle size={18} />
@@ -205,7 +205,7 @@ const MentorSessions = () => {
             })
           ) : (
             <div className="col-span-full py-12 text-center bg-white rounded-3xl border border-dashed border-gray-300">
-              <p className="text-gray-400 italic">No upcoming sessions found.</p>
+              <p className="text-gray-600 italic">No upcoming sessions found.</p>
             </div>
           )}
         </div>
@@ -219,12 +219,11 @@ const MentorSessions = () => {
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>
-              <tr className="text-[11px] font-bold text-gray-400 uppercase tracking-widest border-b border-gray-50">
+              <tr className="text-[11px] font-bold text-gray-600 uppercase tracking-widest border-b border-gray-50">
                 <th className="px-8 py-4">Topic</th>
                 <th className="px-6 py-4">Student</th>
                 <th className="px-6 py-4">Date</th>
                 <th className="px-6 py-4">Status</th>
-                <th className="px-8 py-4 text-right">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
@@ -233,12 +232,12 @@ const MentorSessions = () => {
                   <tr key={session._id} className="hover:bg-gray-50/50 transition-colors">
                     <td className="px-8 py-4">
                       <p className="text-sm font-bold text-gray-900">{session.topic}</p>
-                      <p className="text-[10px] text-gray-400 font-black uppercase">{session.type}</p>
+                      <p className="text-[10px] text-gray-600 font-black uppercase">{session.type}</p>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-600 font-medium">
+                    <td className="px-6 py-4 text-sm text-gray-700 font-medium">
                       {session.student?.name || "N/A"}
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-500 font-medium">
+                    <td className="px-6 py-4 text-sm text-gray-700 font-medium">
                       {new Date(session.startsAt).toLocaleDateString()}
                     </td>
                     <td className="px-6 py-4">
@@ -250,16 +249,11 @@ const MentorSessions = () => {
                         {session.status}
                       </span>
                     </td>
-                    <td className="px-8 py-4 text-right">
-                      <button className="p-2 text-gray-400 hover:text-blue-600 transition-colors">
-                        <ExternalLink size={16} />
-                      </button>
-                    </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan="5" className="px-8 py-8 text-center text-gray-400 italic text-sm">
+                  <td colSpan="4" className="px-8 py-8 text-center text-gray-600 italic text-sm">
                     No session history available.
                   </td>
                 </tr>

@@ -1,6 +1,18 @@
 import { useEffect, useState } from "react"
 import axios from "axios"
-import { BookOpen, FileText, Video, Link as LinkIcon, Trash2 } from "lucide-react"
+import { 
+  BookOpen, 
+  FileText, 
+  Video, 
+  Link as LinkIcon, 
+  Trash2, 
+  Upload, 
+  Plus,
+  ExternalLink,
+  Calendar,
+  User,
+  Info
+} from "lucide-react"
 
 export default function MentorResources() {
 
@@ -10,6 +22,7 @@ export default function MentorResources() {
   const [type, setType] = useState("Link")
   const [file, setFile] = useState(null)
   const [loading, setLoading] = useState(false)
+  const [showUpload, setShowUpload] = useState(false)
 
   const token = localStorage.getItem("token")
 
@@ -70,6 +83,7 @@ export default function MentorResources() {
       setTitle("")
       setDesc("")
       setFile(null)
+      setShowUpload(false)
 
       /* Refresh list */
       fetchResources()
@@ -109,84 +123,158 @@ export default function MentorResources() {
   /* ---------------- UI ---------------- */
 
   return (
-    <div>
+    <div className="space-y-10 animate-in fade-in duration-700">
 
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold">Resources</h1>
-        <p className="text-gray-500">
-          Manage and share learning materials with your mentees
-        </p>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div>
+          <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight">Library Resources</h1>
+          <p className="text-gray-700 mt-2 text-lg">
+            Manage and share curated learning materials with your mentees
+          </p>
+        </div>
+        <button
+          onClick={() => setShowUpload(!showUpload)}
+          className={`flex items-center justify-center gap-2 px-6 py-3 rounded-2xl font-bold transition-all shadow-lg active:scale-95 ${
+            showUpload 
+              ? "bg-gray-100 text-gray-700 hover:bg-gray-200" 
+              : "bg-blue-600 text-white hover:bg-blue-700 shadow-blue-500/20"
+          }`}
+        >
+          {showUpload ? <Trash2 size={20} /> : <Plus size={20} />}
+          {showUpload ? "Cancel Upload" : "Add Resource"}
+        </button>
       </div>
 
-      {/* Upload Form */}
-      <form
-        onSubmit={handleUpload}
-        className="bg-white p-6 rounded-xl shadow-sm space-y-4 mb-8"
-      >
+      {/* Upload Form (Animated) */}
+      {showUpload && (
+        <div className="bg-white p-8 rounded-[2rem] shadow-xl border border-blue-50 animate-in slide-in-from-top-4 duration-500">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-3 bg-blue-50 text-blue-600 rounded-2xl">
+              <Upload size={24} />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900">Upload New Material</h2>
+          </div>
 
-        <input
-          placeholder="Resource Title"
-          className="w-full border p-3 rounded-xl"
-          value={title}
-          onChange={e => setTitle(e.target.value)}
-          required
-        />
+          <form onSubmit={handleUpload} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-gray-700 uppercase tracking-wider ml-1">Resource Title</label>
+              <input
+                placeholder="e.g. System Design Basics"
+                className="w-full border border-gray-200 p-4 rounded-2xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all font-medium"
+                value={title}
+                onChange={e => setTitle(e.target.value)}
+                required
+              />
+            </div>
 
-        <textarea
-          placeholder="Description"
-          className="w-full border p-3 rounded-xl"
-          value={desc}
-          onChange={e => setDesc(e.target.value)}
-          required
-        />
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-gray-700 uppercase tracking-wider ml-1">Resource Type</label>
+              <select
+                className="w-full border border-gray-200 p-4 rounded-2xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all font-medium bg-white"
+                value={type}
+                onChange={e => setType(e.target.value)}
+              >
+                <option value="Link">Web Link / Article</option>
+                <option value="Document">PDF / Document</option>
+                <option value="Video">Video Course</option>
+              </select>
+            </div>
 
-        <select
-          className="w-full border p-3 rounded-xl"
-          value={type}
-          onChange={e => setType(e.target.value)}
-        >
-          <option>Link</option>
-          <option>Document</option>
-          <option>Video</option>
-        </select>
+            <div className="md:col-span-2 space-y-2">
+              <label className="text-xs font-bold text-gray-700 uppercase tracking-wider ml-1">Description</label>
+              <textarea
+                placeholder="Provide a brief summary of what this resource covers..."
+                className="w-full border border-gray-200 p-4 rounded-2xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all font-medium resize-none"
+                rows={3}
+                value={desc}
+                onChange={e => setDesc(e.target.value)}
+                required
+              />
+            </div>
 
-        <input
-          type="file"
-          onChange={e => setFile(e.target.files[0])}
-          className="w-full"
-        />
+            <div className="md:col-span-2 p-6 border-2 border-dashed border-gray-100 rounded-[2rem] bg-gray-50/50">
+              <div className="flex flex-col items-center gap-2">
+                <div className="p-3 bg-white rounded-2xl shadow-sm text-gray-400">
+                  <FileText size={32} />
+                </div>
+                <p className="text-sm font-bold text-gray-700">Attach file or provide link below</p>
+                <p className="text-xs text-gray-600 mb-4 text-center">Supported formats: PDF, DOCX, PNG, JPG (Max 10MB)</p>
+                <input
+                  type="file"
+                  onChange={e => setFile(e.target.files[0])}
+                  className="block w-full text-sm text-gray-600 file:mr-4 file:py-2.5 file:px-6 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-700 cursor-pointer"
+                />
+              </div>
+            </div>
 
-        <button
-          disabled={loading}
-          className="bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700"
-        >
-          {loading ? "Uploading..." : "Upload Resource"}
-        </button>
+            <div className="md:col-span-2 flex justify-end gap-3 mt-2">
+              <button
+                type="button"
+                onClick={() => setShowUpload(false)}
+                className="px-8 py-4 rounded-2xl font-bold text-gray-700 hover:bg-gray-100 transition-all"
+              >
+                Discard
+              </button>
+              <button
+                disabled={loading}
+                className="bg-blue-600 text-white px-10 py-4 rounded-2xl font-bold hover:bg-blue-700 shadow-lg shadow-blue-500/20 transition-all active:scale-95 disabled:opacity-50"
+              >
+                {loading ? "Uploading..." : "Publish Resource"}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
 
-      </form>
-
-      {/* Stats */}
-      <div className="grid md:grid-cols-4 gap-6 mb-8">
-
-        <StatCard icon={<BookOpen />} title={total} subtitle="Total" />
-        <StatCard icon={<FileText />} title={documents} subtitle="Documents" />
-        <StatCard icon={<Video />} title={videos} subtitle="Videos" />
-        <StatCard icon={<LinkIcon />} title={links} subtitle="Links" />
-
+      {/* Stats Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+        <StatWidget icon={<BookOpen size={24} />} title={total} subtitle="Total Files" color="blue" />
+        <StatWidget icon={<FileText size={24} />} title={documents} subtitle="Documents" color="amber" />
+        <StatWidget icon={<Video size={24} />} title={videos} subtitle="Videos" color="red" />
+        <StatWidget icon={<LinkIcon size={24} />} title={links} subtitle="Web Links" color="emerald" />
       </div>
 
       {/* Resource Grid */}
-      <div className="grid md:grid-cols-2 gap-6">
+      <div>
+        <div className="flex items-center justify-between mb-8">
+          <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
+            Your Uploaded Content
+            <span className="bg-gray-100 text-gray-700 text-xs px-3 py-1 rounded-full">{resources.length}</span>
+          </h2>
+          <div className="flex gap-2">
+             {/* Filter chips could go here */}
+          </div>
+        </div>
 
-        {resources.map(resource => (
-          <ResourceCard
-            key={resource._id}
-            resource={resource}
-            onDelete={handleDelete}
-          />
-        ))}
-
+        {resources.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            {resources.map(resource => (
+              <ResourceCard
+                key={resource._id}
+                resource={resource}
+                onDelete={handleDelete}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="bg-white rounded-[3rem] border-2 border-dashed border-gray-100 py-24 flex flex-col items-center justify-center text-center">
+            <div className="w-20 h-20 bg-gray-50 rounded-[2rem] flex items-center justify-center text-gray-300 mb-6">
+              <BookOpen size={40} />
+            </div>
+            <h3 className="text-xl font-bold text-gray-900">No resources yet</h3>
+            <p className="text-gray-600 mt-2 max-w-xs mx-auto">
+              Start building your library by uploading files or sharing useful links with your mentees.
+            </p>
+            <button 
+              onClick={() => setShowUpload(true)}
+              className="mt-8 text-blue-600 font-bold flex items-center gap-2 hover:underline"
+            >
+              <Plus size={18} />
+              Upload your first resource
+            </button>
+          </div>
+        )}
       </div>
 
     </div>
@@ -195,16 +283,23 @@ export default function MentorResources() {
 
 /* ---------------- Components ---------------- */
 
-function StatCard({ icon, title, subtitle }) {
+function StatWidget({ icon, title, subtitle, color }) {
+  const colors = {
+    blue: "bg-blue-50 text-blue-600",
+    amber: "bg-amber-50 text-amber-600",
+    red: "bg-red-50 text-red-600",
+    emerald: "bg-emerald-50 text-emerald-600"
+  }
+
   return (
-    <div className="bg-white p-6 rounded-xl shadow-sm flex items-center gap-4">
-      <div className="bg-gray-100 p-3 rounded-lg text-gray-500">
+    <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-50 flex items-center gap-5 hover:shadow-md transition-all duration-300 group">
+      <div className={`p-4 rounded-2xl transition-transform group-hover:scale-110 ${colors[color]}`}>
         {icon}
       </div>
 
       <div>
-        <p className="text-2xl font-bold">{title}</p>
-        <p className="text-gray-500">{subtitle}</p>
+        <p className="text-2xl font-black text-gray-900">{title}</p>
+        <p className="text-xs font-bold text-gray-600 uppercase tracking-widest mt-0.5">{subtitle}</p>
       </div>
     </div>
   )
@@ -215,59 +310,76 @@ function ResourceCard({ resource, onDelete }) {
   const openResource = () => {
     if (resource.fileUrl) {
       window.open(`http://localhost:5000${resource.fileUrl}`, "_blank")
-    }
-
-    if (resource.link) {
+    } else if (resource.link) {
       window.open(resource.link, "_blank")
     }
   }
 
+  const typeStyles = {
+    Link: "bg-emerald-50 text-emerald-700 border-emerald-100",
+    Document: "bg-amber-50 text-amber-700 border-amber-100",
+    Video: "bg-red-50 text-red-700 border-red-100"
+  }
+
   return (
     <div
-      className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition cursor-pointer"
-      onClick={openResource}
+      className="bg-white rounded-[2.5rem] shadow-sm border border-gray-100 p-8 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group flex flex-col h-full"
     >
-
-      <div className="flex justify-between items-start mb-4">
-
-        <div>
-          <h3 className="font-semibold text-lg">
-            {resource.title}
-          </h3>
-
-          <p className="text-gray-500 text-sm">
-            {resource.description}
-          </p>
+      <div className="flex justify-between items-start mb-6">
+        <div className={`p-3 rounded-2xl ${typeStyles[resource.type] || "bg-gray-50 text-gray-600"}`}>
+          {resource.type === "Link" && <LinkIcon size={20} />}
+          {resource.type === "Document" && <FileText size={20} />}
+          {resource.type === "Video" && <Video size={20} />}
         </div>
-
-        <span className="bg-green-100 text-green-600 px-3 py-1 rounded-full text-sm">
+        <span className={`text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full border ${typeStyles[resource.type] || "bg-gray-50"}`}>
           {resource.type}
         </span>
-
       </div>
 
-      <div className="flex justify-between text-sm text-gray-400">
-        <p>{resource?.mentor?.name}</p>
-
-        <p>
-          {resource.createdAt
-            ? new Date(resource.createdAt).toLocaleDateString()
-            : "No Date"}
+      <div className="flex-1">
+        <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors line-clamp-1">
+          {resource.title}
+        </h3>
+        <p className="text-sm text-gray-700 line-clamp-2 italic mb-6 leading-relaxed">
+          "{resource.description}"
         </p>
       </div>
 
-      <button
-        type="button"
-        onClick={(e) => {
-          e.stopPropagation();
-          onDelete(resource._id);
-        }}
-        className="mt-4 inline-flex items-center gap-2 text-red-600 hover:text-red-700 font-medium"
-      >
-        <Trash2 size={16} />
-        Delete Resource
-      </button>
+      <div className="space-y-4">
+        <div className="flex flex-col gap-2 pt-4 border-t border-gray-50">
+          <div className="flex items-center justify-between text-[11px] font-bold text-gray-600">
+            <div className="flex items-center gap-1.5">
+              <User size={12} className="text-gray-400" />
+              {resource?.mentor?.name || "You"}
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Calendar size={12} className="text-gray-400" />
+              {resource.createdAt ? new Date(resource.createdAt).toLocaleDateString() : "Recently"}
+            </div>
+          </div>
+        </div>
 
+        <div className="flex gap-2">
+          <button
+            onClick={openResource}
+            className="flex-1 bg-gray-50 text-gray-900 py-3 rounded-2xl text-xs font-bold hover:bg-blue-600 hover:text-white transition-all flex items-center justify-center gap-2 border border-gray-100"
+          >
+            <ExternalLink size={14} />
+            View
+          </button>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(resource._id);
+            }}
+            className="p-3 bg-red-50 text-red-600 rounded-2xl hover:bg-red-600 hover:text-white transition-all border border-red-100"
+            title="Delete Resource"
+          >
+            <Trash2 size={16} />
+          </button>
+        </div>
+      </div>
     </div>
   )
 }

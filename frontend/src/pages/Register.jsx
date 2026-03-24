@@ -1,27 +1,41 @@
-import { useState } from "react"
-import { useNavigate } from "react-router-dom"
-import axios from "axios"
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { 
+  User, 
+  Mail, 
+  Lock, 
+  Phone, 
+  Award, 
+  Globe, 
+  Linkedin, 
+  GraduationCap, 
+  ShieldCheck, 
+  ChevronRight,
+  ArrowRight,
+  CheckCircle2
+} from "lucide-react";
 
 function Register() {
-  const [role, setRole] = useState("STUDENT")
-  const [name, setName] = useState("")
-  const [email, setEmail] = useState("")
-  const [phone, setPhone] = useState("")
-  const [password, setPassword] = useState("")
-  const [skills, setSkills] = useState("")
-  const [domain, setDomain] = useState("")
-  const [loading, setLoading] = useState(false)
-  const [linkedinLoading, setLinkedinLoading] = useState(false)
-  const [error, setError] = useState("")
-  const navigate = useNavigate()
+  const [role, setRole] = useState("STUDENT");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [password, setPassword] = useState("");
+  const [skills, setSkills] = useState("");
+  const [domain, setDomain] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [linkedinLoading, setLinkedinLoading] = useState(false);
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   const handleRegister = async (e) => {
-    e.preventDefault()
-    setError("")
-    setLoading(true)
+    e.preventDefault();
+    setError("");
+    setLoading(true);
 
     try {
-      const skillsArray = skills.split(",").map(s => s.trim()).filter(s => s)
+      const skillsArray = skills.split(",").map(s => s.trim()).filter(s => s);
       
       const userData = {
         role: role.toUpperCase(),
@@ -37,242 +51,278 @@ function Register() {
           studentSkills: skillsArray,
           studentDomain: domain
         })
-      }
+      };
 
       const { data } = await axios.post(
         "http://localhost:5000/api/auth/register",
         userData
-      )
+      );
 
-      // Store token
-      localStorage.setItem("token", data.token)
-      localStorage.setItem("user", JSON.stringify(data.user))
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
 
-      // Redirect based on role
       if (role.toUpperCase() === "MENTOR") {
-        const mentorStatus = data.user?.mentorStatus
+        const mentorStatus = data.user?.mentorStatus;
         if (mentorStatus === "VERIFIED" || mentorStatus === "ACTIVE") {
-          navigate("/mentor")
+          navigate("/mentor");
         } else {
-          navigate("/mentor/profile")
+          navigate("/mentor/profile");
         }
       } else if (role.toUpperCase() === "STUDENT") {
-        navigate("/student")
+        navigate("/student");
       } else {
-        navigate("/admin")
+        navigate("/admin");
       }
     } catch (err) {
-      setError(err.response?.data?.message || "Registration failed. Please try again.")
-      console.error(err)
+      setError(err.response?.data?.message || "Registration failed. Please try again.");
+      console.error(err);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleLinkedinSignup = () => {
-    setLinkedinLoading(true)
-    window.location.href = `http://localhost:5000/api/auth/linkedin?role=${role.toUpperCase()}`
-  }
+    setLinkedinLoading(true);
+    window.location.href = `http://localhost:5000/api/auth/linkedin?role=${role.toUpperCase()}`;
+  };
+
+  const roles = [
+    { id: "STUDENT", label: "Student", icon: <GraduationCap size={16} />, color: "blue" },
+    { id: "MENTOR", label: "Mentor", icon: <User size={16} />, color: "indigo" },
+    { id: "ADMIN", label: "Admin", icon: <ShieldCheck size={16} />, color: "slate" },
+  ];
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-      <div className="bg-white w-[420px] p-8 rounded-2xl shadow-lg">
-
-        {/* Icon */}
-        <div className="flex justify-center mb-4">
-          <div className="bg-blue-600 text-white p-4 rounded-xl text-2xl">
-            🎓
+    <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center p-6 py-12">
+      <div className="bg-white w-full max-w-[650px] p-8 md:p-12 rounded-[3rem] shadow-xl border border-slate-100 animate-in fade-in zoom-in duration-500">
+        
+        {/* Header */}
+        <div className="flex flex-col items-center text-center mb-10">
+          <div className="w-14 h-14 bg-blue-600 text-white rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-blue-500/20">
+            <GraduationCap size={28} />
           </div>
+          <h2 className="text-3xl font-black text-slate-900 tracking-tight mb-2">
+            Create Your Account
+          </h2>
+          <p className="text-slate-600 font-medium">
+            Join the community and start your journey today
+          </p>
         </div>
 
-        {/* Heading */}
-        <h2 className="text-2xl font-bold text-center mb-2">
-          Create Account
-        </h2>
-        <p className="text-center text-gray-500 mb-6">
-          Join MentorConnect Community today
-        </p>
-
-        <form onSubmit={handleRegister}>
-
+        <form onSubmit={handleRegister} className="space-y-8">
+          
           {/* Role Selection */}
-          <div className="mb-6">
-            <p className="mb-2 text-sm text-gray-600">I want to join as a</p>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => setRole("STUDENT")}
-                className={`flex-1 py-2 rounded-lg border ${
-                  role === "STUDENT"
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-100"
-                }`}
-              >
-                Student
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setRole("MENTOR")}
-                className={`flex-1 py-2 rounded-lg border ${
-                  role === "MENTOR"
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-100"
-                }`}
-              >
-                Mentor
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setRole("ADMIN")}
-                className={`flex-1 py-2 rounded-lg border ${
-                  role === "ADMIN"
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-100"
-                }`}
-              >
-                Admin
-              </button>
+          <div className="space-y-3">
+            <label className="text-xs font-bold text-slate-700 uppercase tracking-widest ml-1">
+              Join as a
+            </label>
+            <div className="grid grid-cols-3 gap-3 bg-slate-50 p-1.5 rounded-2xl border border-slate-100">
+              {roles.map((r) => (
+                <button
+                  key={r.id}
+                  type="button"
+                  onClick={() => setRole(r.id)}
+                  className={`flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm transition-all duration-200 ${
+                    role === r.id
+                      ? "bg-white text-blue-600 shadow-md ring-1 ring-slate-200"
+                      : "text-slate-500 hover:text-slate-700 hover:bg-slate-100/50"
+                  }`}
+                >
+                  {r.icon}
+                  <span className="hidden sm:inline">{r.label}</span>
+                </button>
+              ))}
             </div>
           </div>
 
           {/* Error Message */}
           {error && (
-            <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg text-sm">
+            <div className="p-4 rounded-2xl bg-red-50 border border-red-100 text-red-700 text-sm font-bold flex items-center gap-3 animate-shake">
+              <CheckCircle2 size={18} className="text-red-500 rotate-180" />
               {error}
             </div>
           )}
 
-          {/* Full Name */}
-          <div className="mb-4">
-            <label className="block text-sm mb-1 text-gray-600">
-              Full Name
-            </label>
-            <input
-              type="text"
-              placeholder="John Doe"
-              className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-            />
-          </div>
+          {/* Form Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            {/* Full Name */}
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-slate-700 uppercase tracking-widest ml-1">
+                Full Name
+              </label>
+              <div className="relative group">
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors">
+                  <User size={18} />
+                </div>
+                <input
+                  type="text"
+                  placeholder="John Doe"
+                  className="w-full pl-12 pr-4 py-3.5 rounded-2xl border border-slate-200 bg-slate-50/30 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-medium"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                />
+              </div>
+            </div>
 
-          {/* Email */}
-          <div className="mb-4">
-            <label className="block text-sm mb-1 text-gray-600">
-              Email
-            </label>
-            <input
-              type="email"
-              placeholder="you@example.com"
-              className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
+            {/* Email */}
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-slate-700 uppercase tracking-widest ml-1">
+                Email Address
+              </label>
+              <div className="relative group">
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors">
+                  <Mail size={18} />
+                </div>
+                <input
+                  type="email"
+                  placeholder="john@example.com"
+                  className="w-full pl-12 pr-4 py-3.5 rounded-2xl border border-slate-200 bg-slate-50/30 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-medium"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </div>
+            </div>
 
-          {/* Password */}
-          <div className="mb-4">
-            <label className="block text-sm mb-1 text-gray-600">
-              Password
-            </label>
-            <input
-              type="password"
-              placeholder="********"
-              className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
+            {/* Password */}
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-slate-700 uppercase tracking-widest ml-1">
+                Password
+              </label>
+              <div className="relative group">
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors">
+                  <Lock size={18} />
+                </div>
+                <input
+                  type="password"
+                  placeholder="••••••••"
+                  className="w-full pl-12 pr-4 py-3.5 rounded-2xl border border-slate-200 bg-slate-50/30 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-medium"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+              </div>
+            </div>
 
-          {/* Phone Number */}
-          <div className="mb-4">
-            <label className="block text-sm mb-1 text-gray-600">
-              Phone Number
-            </label>
-            <input
-              type="tel"
-              placeholder="+1 555 123 4567"
-              className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              required={role === "MENTOR"}
-            />
-          </div>
+            {/* Phone Number */}
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-slate-700 uppercase tracking-widest ml-1">
+                Phone Number
+              </label>
+              <div className="relative group">
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors">
+                  <Phone size={18} />
+                </div>
+                <input
+                  type="tel"
+                  placeholder="+91 00000 00000"
+                  className="w-full pl-12 pr-4 py-3.5 rounded-2xl border border-slate-200 bg-slate-50/30 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-medium"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  required={role === "MENTOR"}
+                />
+              </div>
+            </div>
 
-          {/* Skills / Domain - Different for Student and Mentor */}
-          <div className="mb-6">
-            <label className="block text-sm mb-1 text-gray-600">
-              {role === "MENTOR" ? "Skills" : "Skills / Interests"}
-            </label>
-            <input
-              type="text"
-              placeholder={role === "MENTOR" ? "React, Python, ML" : "React, Python, ML"}
-              className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={skills}
-              onChange={(e) => setSkills(e.target.value)}
-            />
-            <p className="text-xs text-gray-500 mt-1">Separate multiple items with commas</p>
-          </div>
-
-          {/* Domain / Area of Interest */}
-          <div className="mb-6">
-            <label className="block text-sm mb-1 text-gray-600">
-              {role === "MENTOR" ? "Expertise Domain" : "Area of Interest"}
-            </label>
-            <input
-              type="text"
-              placeholder={role === "MENTOR" ? "Web Development, AI/ML, etc." : "Frontend, Backend, etc."}
-              className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={domain}
-              onChange={(e) => setDomain(e.target.value)}
-            />
-          </div>
-
-          {/* Button */}
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
-          >
-            {loading ? "Creating Account..." : "Create Account"}
-          </button>
-
-          {role === "MENTOR" && (
-            <>
-              <div className="my-4 flex items-center">
-                <div className="h-px bg-gray-300 flex-1" />
-                <span className="px-3 text-xs text-gray-500">OR</span>
-                <div className="h-px bg-gray-300 flex-1" />
+            {/* Skills & Expertise - Conditional based on role */}
+            <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-slate-50 rounded-[2rem] border border-slate-100">
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-slate-700 uppercase tracking-widest ml-1">
+                  {role === "MENTOR" ? "Skills & Expertise" : "Interests & Skills"}
+                </label>
+                <div className="relative group">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors">
+                    <Award size={18} />
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="React, Python, UI Design..."
+                    className="w-full pl-12 pr-4 py-3.5 rounded-2xl border border-slate-200 bg-white focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-medium"
+                    value={skills}
+                    onChange={(e) => setSkills(e.target.value)}
+                  />
+                </div>
+                <p className="text-[10px] text-slate-500 font-medium ml-1">Separate skills with commas</p>
               </div>
 
-              <button
-                type="button"
-                onClick={handleLinkedinSignup}
-                disabled={linkedinLoading}
-                className="w-full border border-blue-600 text-blue-700 py-2 rounded-lg hover:bg-blue-50 transition disabled:opacity-60"
-              >
-                {linkedinLoading ? "Redirecting to LinkedIn..." : "Sign up with LinkedIn"}
-              </button>
-            </>
-          )}
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-slate-700 uppercase tracking-widest ml-1">
+                  {role === "MENTOR" ? "Primary Domain" : "Target Domain"}
+                </label>
+                <div className="relative group">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors">
+                    <Globe size={18} />
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Web Development, AI/ML..."
+                    className="w-full pl-12 pr-4 py-3.5 rounded-2xl border border-slate-200 bg-white focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-medium"
+                    value={domain}
+                    onChange={(e) => setDomain(e.target.value)}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="space-y-4 pt-4">
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20 active:scale-[0.99] disabled:opacity-70 flex items-center justify-center gap-2"
+            >
+              {loading ? (
+                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                <>
+                  Register Now
+                  <ArrowRight size={18} />
+                </>
+              )}
+            </button>
+
+            {role === "MENTOR" && (
+              <div className="space-y-4">
+                <div className="flex items-center gap-4">
+                  <div className="h-px bg-slate-200 flex-1" />
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Social Signup</span>
+                  <div className="h-px bg-slate-200 flex-1" />
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleLinkedinSignup}
+                  disabled={linkedinLoading}
+                  className="w-full bg-[#0077B5] text-white py-4 rounded-2xl font-bold hover:bg-[#006399] transition-all flex items-center justify-center gap-3 shadow-lg shadow-blue-500/10 active:scale-[0.99] disabled:opacity-60"
+                >
+                  {linkedinLoading ? (
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  ) : (
+                    <>
+                      <Linkedin size={20} fill="white" />
+                      Sign up with LinkedIn
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Footer Link */}
+          <p className="text-center text-sm font-medium text-slate-600">
+            Already have an account?{" "}
+            <a href="/" className="text-blue-600 font-bold hover:underline">
+              Sign In
+            </a>
+          </p>
+
         </form>
-
-        {/* Login Link */}
-        <p className="text-center mt-4 text-sm text-gray-600">
-          Already have an account?{" "}
-          <a href="/" className="text-blue-600 hover:underline">
-            Sign In
-          </a>
-        </p>
-
       </div>
     </div>
-  )
+  );
 }
 
-export default Register
+export default Register;

@@ -51,7 +51,7 @@ export default function MentorDashboard() {
                   `flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-200 group ${
                     isActive 
                       ? "bg-white/10 text-white shadow-sm" 
-                      : "text-gray-400 hover:text-white hover:bg-white/5"
+                      : "text-gray-300 hover:text-white hover:bg-white/5"
                   }`
                 }
               >
@@ -72,12 +72,12 @@ export default function MentorDashboard() {
               </div>
               <div className="overflow-hidden">
                 <p className="text-sm font-semibold truncate">{user.name || "Mentor Name"}</p>
-                <p className="text-xs text-gray-400 truncate">{user.email || "mentor@example.com"}</p>
+                <p className="text-xs text-gray-300 truncate">{user.email || "mentor@example.com"}</p>
               </div>
             </div>
             <button 
               onClick={handleLogout}
-              className="flex items-center gap-2 text-xs font-semibold text-gray-400 hover:text-red-400 transition-colors w-full py-2"
+              className="flex items-center gap-2 text-xs font-semibold text-gray-300 hover:text-red-400 transition-colors w-full py-2"
             >
               <LogOut size={14} />
               Sign Out
@@ -91,7 +91,7 @@ export default function MentorDashboard() {
         {/* TOP NAVBAR */}
         <header className="h-20 bg-white/80 backdrop-blur-md border-b border-gray-200 flex items-center justify-between px-8 sticky top-0 z-10">
           <div className="relative w-96 hidden md:block">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
             <input 
               type="text" 
               placeholder="Search sessions, mentees..." 
@@ -100,18 +100,18 @@ export default function MentorDashboard() {
           </div>
 
           <div className="flex items-center gap-5">
-            <button className="relative p-2 text-gray-500 hover:bg-gray-100 rounded-full transition-colors">
+            <button className="relative p-2 text-gray-600 hover:bg-gray-100 rounded-full transition-colors">
               <Bell size={20} />
               <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
             </button>
-            <button className="p-2 text-gray-500 hover:bg-gray-100 rounded-full transition-colors">
+            <button className="p-2 text-gray-600 hover:bg-gray-100 rounded-full transition-colors">
               <Settings size={20} />
             </button>
             <div className="h-8 w-px bg-gray-200 mx-1"></div>
             <div className="flex items-center gap-3 pl-2">
               <div className="text-right hidden sm:block">
                 <p className="text-xs font-bold text-gray-900 uppercase tracking-tighter">Status</p>
-                <p className="text-[10px] text-green-500 font-bold uppercase">Online</p>
+                <p className="text-[10px] text-green-600 font-bold uppercase">Online</p>
               </div>
               <div className="w-9 h-9 rounded-lg bg-primary-100 text-primary-700 flex items-center justify-center font-bold">
                 {user.name?.charAt(0) || "M"}
