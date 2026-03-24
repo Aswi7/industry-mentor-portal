@@ -53,12 +53,15 @@ export default function MentorOverview() {
   }, [])
 
   const canJoinSession = (session) => {
-    if (!session?.meetingLink || session.status !== "ACCEPTED") return false
+    if (!session?.meetingLink || (session.status !== "ACCEPTED" && session.status !== "OPEN")) return false
     const startTs = session.startsAt ? new Date(session.startsAt).getTime() : NaN
     const endTs = session.endsAt ? new Date(session.endsAt).getTime() : null
     const graceAfterEndMs = 60 * 60 * 1000
     if (Number.isNaN(startTs)) return false
-    if (nowTs < startTs) return false
+    
+    // Allow mentor to join up to 10 minutes early
+    if (nowTs < startTs - 10 * 60 * 1000) return false
+    
     if (endTs && !Number.isNaN(endTs) && nowTs > endTs + graceAfterEndMs) return false
     return true
   }
@@ -94,13 +97,20 @@ export default function MentorOverview() {
           {upcomingSessions.length > 0 ? (
             upcomingSessions.map(session => (
               <div key={session._id} className="bg-gray-100 rounded-lg p-4 flex justify-between items-center">
-                <div>
-                  <p className="font-semibold">
-                    {session.topic}
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    with {session.student?.name || "TBD student"}
-                  </p>
+                <div className="flex items-center gap-3">
+                  <div>
+                    <p className="font-semibold">
+                      {session.topic}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      with {session.student?.name || "TBD student"}
+                    </p>
+                  </div>
+                  {session.type === "PAID" && (
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 border border-amber-200">
+                      ₹{session.price}
+                    </span>
+                  )}
                 </div>
                 {canJoinSession(session) ? (
                   <button
@@ -131,13 +141,20 @@ export default function MentorOverview() {
           {pendingRequests.length > 0 ? (
             pendingRequests.map(request => (
               <div key={request._id} className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex justify-between items-center">
-                <div>
-                  <p className="font-semibold">
-                    {request.topic}
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    {request.student?.name || "Unknown student"}
-                  </p>
+                <div className="flex items-center gap-3">
+                  <div>
+                    <p className="font-semibold">
+                      {request.topic}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      {request.student?.name || "Unknown student"}
+                    </p>
+                  </div>
+                  {request.type === "PAID" && (
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 border border-amber-200">
+                      ₹{request.price}
+                    </span>
+                  )}
                 </div>
                 <span className="bg-yellow-200 text-yellow-700 px-3 py-1 rounded-full text-sm">
                   Pending

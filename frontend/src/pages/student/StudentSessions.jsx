@@ -81,8 +81,9 @@ const StudentSessions = () => {
       return { canJoin: false, label: "Join Unavailable", hint: "Waiting for mentor schedule" };
     }
 
-    if (now < startMs) {
-      return { canJoin: false, label: "Join (Locked)", hint: "Enabled at scheduled start time" };
+    // Allow student to join up to 5 minutes early
+    if (now < startMs - 5 * 60 * 1000) {
+      return { canJoin: false, label: "Join (Locked)", hint: "Enabled 5 mins before start" };
     }
 
     if (endMs && !Number.isNaN(endMs) && now > endMs + graceAfterEndMs) {
@@ -146,7 +147,18 @@ const StudentSessions = () => {
                 className="bg-white rounded-xl shadow p-6 flex justify-between items-center"
               >
                 <div className="space-y-2">
-                  <h2 className="text-xl font-semibold">{session.topic}</h2>
+                  <div className="flex items-center gap-3">
+                    <h2 className="text-xl font-semibold">{session.topic}</h2>
+                    {session.type === "PAID" ? (
+                      <span className="text-xs font-bold px-3 py-1 rounded-full bg-amber-100 text-amber-700 border border-amber-200">
+                        PAID: ₹{session.price}
+                      </span>
+                    ) : (
+                      <span className="text-xs font-medium px-3 py-1 rounded-full bg-gray-100 text-gray-600 border border-gray-200">
+                        FREE
+                      </span>
+                    )}
+                  </div>
 
                 <p className="text-gray-600 text-sm">with {session.mentor?.name || "Mentor"}</p>
 

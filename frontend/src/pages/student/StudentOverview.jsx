@@ -53,7 +53,10 @@ const StudentOverview = () => {
     const endTs = session.endsAt ? new Date(session.endsAt).getTime() : null;
     const graceAfterEndMs = 60 * 60 * 1000;
     if (Number.isNaN(startTs)) return false;
-    if (nowTs < startTs) return false;
+    
+    // Allow student to join up to 5 minutes early
+    if (nowTs < startTs - 5 * 60 * 1000) return false;
+    
     if (endTs && !Number.isNaN(endTs) && nowTs > endTs + graceAfterEndMs) return false;
     return true;
   };
@@ -143,13 +146,20 @@ const StudentOverview = () => {
           {upcomingSessions.length > 0 ? (
             upcomingSessions.map(session => (
               <div key={session._id} className="bg-gray-100 p-4 rounded-lg flex justify-between items-center">
-                <div>
-                  <p className="font-medium text-gray-800">
-                    {session.topic}
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    with {session.mentor.name}
-                  </p>
+                <div className="flex items-center gap-3">
+                  <div>
+                    <p className="font-medium text-gray-800">
+                      {session.topic}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      with {session.mentor.name}
+                    </p>
+                  </div>
+                  {session.type === "PAID" && (
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 border border-amber-200">
+                      ₹{session.price}
+                    </span>
+                  )}
                 </div>
                 {canJoinSession(session) ? (
                   <button
@@ -178,17 +188,17 @@ const StudentOverview = () => {
           </h3>
 
           <div className="space-y-6">
-            {stats.skills > 0 ? (
-              [`Skill 1`, `Skill 2`, `Skill 3`, `Skill 4`].map((skill, index) => (
+            {stats.skillDetails && stats.skillDetails.length > 0 ? (
+              stats.skillDetails.map((item, index) => (
                 <div key={index}>
                   <div className="flex justify-between text-sm mb-2">
-                    <span>{skill}</span>
-                    <span>{Math.floor(Math.random() * 10)}/10</span>
+                    <span>{item.skill}</span>
+                    <span>{item.sessions} session{item.sessions !== 1 ? 's' : ''} attended</span>
                   </div>
                   <div className="w-full bg-gray-200 h-2 rounded-full">
                     <div 
                       className="bg-blue-600 h-2 rounded-full"
-                      style={{ width: `${Math.floor(Math.random() * 100)}%` }}
+                      style={{ width: `${Math.min((item.sessions / 10) * 100, 100)}%` }}
                     ></div>
                   </div>
                 </div>

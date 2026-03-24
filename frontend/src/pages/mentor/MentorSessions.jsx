@@ -85,7 +85,7 @@ const MentorSessions = () => {
   };
 
   const getJoinMeta = (session) => {
-    if (!session?.meetingLink || session.status !== "ACCEPTED") {
+    if (!session?.meetingLink || (session.status !== "ACCEPTED" && session.status !== "OPEN")) {
       return { canJoin: false };
     }
 
@@ -94,7 +94,10 @@ const MentorSessions = () => {
     const graceAfterEndMs = 60 * 60 * 1000;
 
     if (Number.isNaN(startTs)) return { canJoin: false };
-    if (nowTs < startTs) return { canJoin: false };
+    
+    // Allow mentor to join up to 10 minutes early
+    if (nowTs < startTs - 10 * 60 * 1000) return { canJoin: false };
+    
     if (endTs && !Number.isNaN(endTs) && nowTs > endTs + graceAfterEndMs) return { canJoin: false };
 
     return { canJoin: true };
@@ -175,6 +178,8 @@ const MentorSessions = () => {
                     topic: data.title,
                     startsAt: localStart.toISOString(),
                     endsAt: localEnd.toISOString(),
+                    type: data.type,
+                    price: data.price
                   },
                   { headers }
                 );
@@ -222,6 +227,16 @@ const MentorSessions = () => {
                     }`}>
                       {session.status}
                     </span>
+
+                    {session.type === "PAID" ? (
+                      <span className="text-sm font-bold px-3 py-1 rounded-full bg-amber-100 text-amber-700 border border-amber-200">
+                        PAID: ₹{session.price}
+                      </span>
+                    ) : (
+                      <span className="text-sm font-medium px-3 py-1 rounded-full bg-gray-100 text-gray-600 border border-gray-200">
+                        FREE
+                      </span>
+                    )}
                   </div>
 
                   <p className="text-gray-500 mt-2">

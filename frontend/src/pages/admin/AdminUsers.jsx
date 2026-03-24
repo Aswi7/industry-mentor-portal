@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
+import { Search, Users, GraduationCap, Briefcase } from "lucide-react";
 
 const getInitials = (name = "") =>
   name
@@ -24,6 +25,7 @@ const getUserDetails = (user) => {
 export default function AdminUsers() {
   const [users, setUsers] = useState([]);
   const [query, setQuery] = useState("");
+  const [roleFilter, setRoleFilter] = useState("ALL");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -46,9 +48,15 @@ export default function AdminUsers() {
   }, []);
 
   const filteredUsers = useMemo(() => {
+    let filtered = users;
+
+    if (roleFilter !== "ALL") {
+      filtered = filtered.filter(u => u.role === roleFilter);
+    }
+
     const q = query.trim().toLowerCase();
-    if (!q) return users;
-    return users.filter((user) => {
+    if (!q) return filtered;
+    return filtered.filter((user) => {
       const details = getUserDetails(user).toLowerCase();
       return (
         user.name?.toLowerCase().includes(q) ||
@@ -57,101 +65,96 @@ export default function AdminUsers() {
         details.includes(q)
       );
     });
-  }, [users, query]);
+  }, [users, query, roleFilter]);
 
-  if (loading) {
-    return <div style={{ padding: "30px" }}>Loading users...</div>;
-  }
-
-  if (error) {
-    return <div style={{ padding: "30px", color: "#dc2626" }}>{error}</div>;
-  }
+  if (loading) return <div className="p-10 text-center text-gray-500">Loading users...</div>;
+  if (error) return <div className="p-10 text-center text-red-600">{error}</div>;
 
   return (
-    <div style={{ padding: "30px", background: "#f4f6f9", minHeight: "100vh" }}>
-      <h2 style={{ fontSize: "28px", fontWeight: "600" }}>User Management</h2>
-      <p style={{ color: "gray", marginBottom: "20px" }}>
-        Manage all platform users
-      </p>
+    <div className="p-8 bg-gray-50 min-h-screen">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-800">User Management</h1>
+        <p className="text-gray-500 mt-2">Manage and monitor all platform participants</p>
+      </div>
 
-      <input
-        type="text"
-        placeholder="Search users..."
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        style={{
-          width: "350px",
-          padding: "10px",
-          borderRadius: "8px",
-          border: "1px solid #ccc",
-          marginBottom: "20px",
-        }}
-      />
+      <div className="flex flex-col md:flex-row gap-4 mb-8 items-center justify-between">
+        <div className="relative w-full md:w-96">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+          <input
+            type="text"
+            placeholder="Search by name, email, or skills..."
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+          />
+        </div>
 
-      <div
-        style={{
-          background: "white",
-          borderRadius: "10px",
-          overflow: "hidden",
-          boxShadow: "0 2px 10px rgba(0,0,0,0.05)",
-        }}
-      >
-        <table style={{ width: "100%", borderCollapse: "collapse" }}>
-          <thead style={{ background: "#eef1f6" }}>
+        <div className="flex bg-white p-1 rounded-xl shadow-sm border">
+          <button
+            onClick={() => setRoleFilter("ALL")}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition ${
+              roleFilter === "ALL" ? "bg-blue-600 text-white shadow-md" : "text-gray-600 hover:bg-gray-100"
+            }`}
+          >
+            <Users size={16} /> All
+          </button>
+          <button
+            onClick={() => setRoleFilter("STUDENT")}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition ${
+              roleFilter === "STUDENT" ? "bg-blue-600 text-white shadow-md" : "text-gray-600 hover:bg-gray-100"
+            }`}
+          >
+            <GraduationCap size={16} /> Students
+          </button>
+          <button
+            onClick={() => setRoleFilter("MENTOR")}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition ${
+              roleFilter === "MENTOR" ? "bg-blue-600 text-white shadow-md" : "text-gray-600 hover:bg-gray-100"
+            }`}
+          >
+            <Briefcase size={16} /> Mentors
+          </button>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-2xl shadow-sm border overflow-hidden">
+        <table className="w-full text-left">
+          <thead className="bg-gray-50 border-b">
             <tr>
-              <th style={thStyle}>User</th>
-              <th style={thStyle}>Email</th>
-              <th style={thStyle}>Role</th>
-              <th style={thStyle}>Details</th>
+              <th className="px-6 py-4 text-sm font-semibold text-gray-600">User</th>
+              <th className="px-6 py-4 text-sm font-semibold text-gray-600">Email</th>
+              <th className="px-6 py-4 text-sm font-semibold text-gray-600">Role</th>
+              <th className="px-6 py-4 text-sm font-semibold text-gray-600">Expertise / Skills</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-gray-100">
             {filteredUsers.map((user) => (
-              <tr key={user._id} style={{ borderTop: "1px solid #eee" }}>
-                <td style={tdStyle}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                    <div
-                      style={{
-                        width: "35px",
-                        height: "35px",
-                        borderRadius: "50%",
-                        background: "#d0e2ff",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontWeight: "600",
-                        color: "#1d4ed8",
-                      }}
-                    >
+              <tr key={user._id} className="hover:bg-gray-50 transition">
+                <td className="px-6 py-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold text-sm">
                       {getInitials(user.name)}
                     </div>
-                    {user.name}
+                    <span className="font-medium text-gray-900">{user.name}</span>
                   </div>
                 </td>
-                <td style={tdStyle}>{user.email}</td>
-                <td style={tdStyle}>
-                  <span
-                    style={{
-                      padding: "5px 12px",
-                      borderRadius: "20px",
-                      fontSize: "12px",
-                      background:
-                        user.role === "STUDENT" ? "#e0edff" : "#d1fae5",
-                      color:
-                        user.role === "STUDENT" ? "#2563eb" : "#059669",
-                      fontWeight: "500",
-                    }}
-                  >
+                <td className="px-6 py-4 text-gray-600 text-sm">{user.email}</td>
+                <td className="px-6 py-4">
+                  <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                    user.role === "STUDENT" ? "bg-blue-50 text-blue-700" : "bg-green-50 text-green-700"
+                  }`}>
                     {user.role}
                   </span>
                 </td>
-                <td style={tdStyle}>{getUserDetails(user)}</td>
+                <td className="px-6 py-4 text-gray-500 text-sm italic">
+                  {getUserDetails(user)}
+                </td>
               </tr>
             ))}
             {filteredUsers.length === 0 && (
               <tr>
-                <td style={tdStyle} colSpan={4}>
-                  No users found.
+                <td colSpan={4} className="px-6 py-10 text-center text-gray-400 italic">
+                  No users match your current filters.
                 </td>
               </tr>
             )}
@@ -161,14 +164,3 @@ export default function AdminUsers() {
     </div>
   );
 }
-
-const thStyle = {
-  textAlign: "left",
-  padding: "15px",
-  fontSize: "14px",
-};
-
-const tdStyle = {
-  padding: "15px",
-  fontSize: "14px",
-};

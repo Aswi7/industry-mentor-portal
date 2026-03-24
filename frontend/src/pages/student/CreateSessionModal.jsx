@@ -12,7 +12,8 @@ const CreateSessionModal = ({
   const [time, setTime] = useState("");
   const [duration, setDuration] = useState("60");
   const [maxStudents, setMaxStudents] = useState("5");
-  const [type, setType] = useState("free");
+  const [type, setType] = useState("FREE");
+  const [price, setPrice] = useState("0");
   const [skillInput, setSkillInput] = useState("");
   const [skills, setSkills] = useState([]);
 
@@ -27,6 +28,7 @@ const CreateSessionModal = ({
       duration,
       maxStudents,
       type,
+      price: type === "PAID" ? Number(price) : 0,
     };
     if (onCreate) {
       await onCreate(sessionData);
@@ -176,27 +178,44 @@ const CreateSessionModal = ({
 
           <div>
             <span className="text-sm font-medium">Session Type</span>
-            <div className="mt-2 flex items-center gap-4">
-              <label className="flex items-center gap-2">
-                <input
-                  type="radio"
-                  name="type"
-                  value="free"
-                  checked={type === "free"}
-                  onChange={() => setType("free")}
-                />
-                Unpaid (Free)
-              </label>
-              <label className="flex items-center gap-2">
-                <input
-                  type="radio"
-                  name="type"
-                  value="paid"
-                  checked={type === "paid"}
-                  onChange={() => setType("paid")}
-                />
-                Paid
-              </label>
+            <div className="mt-2 flex flex-col gap-4">
+              <div className="flex items-center gap-4">
+                <label className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    name="type"
+                    value="FREE"
+                    checked={type === "FREE"}
+                    onChange={() => setType("FREE")}
+                  />
+                  Unpaid (Free)
+                </label>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    name="type"
+                    value="PAID"
+                    checked={type === "PAID"}
+                    onChange={() => setType("PAID")}
+                  />
+                  Paid
+                </label>
+              </div>
+
+              {type === "PAID" && (
+                <div className="flex items-center gap-2 animate-in fade-in duration-300">
+                  <label className="text-sm font-medium">Price (INR):</label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={price}
+                    onChange={(e) => setPrice(e.target.value)}
+                    className="w-24 border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="e.g. 500"
+                    required={type === "PAID"}
+                  />
+                </div>
+              )}
             </div>
           </div>
 
