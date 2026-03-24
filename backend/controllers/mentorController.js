@@ -249,12 +249,16 @@ const getMentorSessions = async (req, res) => {
   }
 };
 
-// Get mentor's mentees
+// Get mentor's mentees (only for upcoming/accepted sessions)
 const getMentorMentees = async (req, res) => {
   try {
     const mentorId = req.user.id;
 
-    const sessions = await Session.find({ mentor: mentorId, status: { $in: ["ACCEPTED", "COMPLETED"] } })
+    // Only fetch sessions that are currently ACCEPTED (upcoming)
+    const sessions = await Session.find({ 
+      mentor: mentorId, 
+      status: "ACCEPTED" 
+    })
       .populate("student", "name email studentSkills studentDomain bio");
 
     // Get unique mentees

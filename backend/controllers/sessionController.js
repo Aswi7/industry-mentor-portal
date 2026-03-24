@@ -1,5 +1,6 @@
 const Session = require("../models/Session");
 const User = require("../models/User");
+const Notification = require("../models/Notification");
 const { google } = require("googleapis");
 const { markExpiredSessionsAsCompleted } = require("../services/sessionStatus");
 
@@ -274,6 +275,22 @@ const acceptSession = async (req, res) => {
     }
 
     await session.save();
+
+    // Send notification to student
+    try {
+      const mentor = await User.findById(req.user.id);
+      await Notification.create({
+        recipient: session.student,
+        sender: req.user.id,
+        type: "SESSION_ACCEPTED",
+        title: "Session Request Accepted",
+        message: `Your session request for "${session.topic}" has been accepted by ${mentor.name}.`,
+        relatedId: session._id,
+        relatedModel: "Session"
+      });
+    } catch (notifErr) {
+      console.warn("Failed to create notification:", notifErr.message);
+    }
 
     res.json({ message: "Session accepted", session });
 

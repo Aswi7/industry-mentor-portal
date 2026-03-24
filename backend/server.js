@@ -21,6 +21,7 @@ const mentorRoutes = require("./routes/mentorRoutes");
 const studentRoutes = require("./routes/studentRoutes"); 
 const sessionRoutes = require("./routes/sessionRoutes");
 const resourceRoutes = require("./routes/resourceRoutes");
+const notificationRoutes = require("./routes/notificationRoutes");
 const { markExpiredSessionsAsCompleted } = require("./services/sessionStatus");
 // ✅ ADD THIS
 
@@ -31,6 +32,7 @@ app.use("/api/mentor", mentorRoutes);
 app.use("/api/student", studentRoutes);
 app.use("/api/sessions", sessionRoutes);
 app.use("/api/resources", resourceRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 app.use("/uploads", express.static("uploads")); // ✅ ADD THIS
 
