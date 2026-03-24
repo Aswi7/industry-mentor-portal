@@ -79,7 +79,8 @@ const getStudentStats = async (req, res) => {
     ).length;
 
     // Count completed sessions
-    const completedCount = allSessions.filter(s => s.status === "COMPLETED").length;
+    const completedSessions = allSessions.filter(s => s.status === "COMPLETED");
+    const completedCount = completedSessions.length;
 
     const eligibleSessions = await Session.find({
       student: studentId,
@@ -93,14 +94,23 @@ const getStudentStats = async (req, res) => {
 
     // For skills, get from user profile
     const student = await User.findById(studentId);
-    const skillsTracked = student?.studentSkills?.length || 0;
+    const studentSkills = student?.studentSkills || [];
+    
+    // Calculate sessions per skill
+    const skillDetails = studentSkills.map(skill => {
+      const count = completedSessions.filter(s => 
+        s.topic.toLowerCase().includes(skill.toLowerCase())
+      ).length;
+      return { skill, sessions: count };
+    });
 
     res.status(200).json({
       stats: {
         upcoming: upcomingCount,
         completed: completedCount,
         resources: resourcesCount,
-        skills: skillsTracked
+        skills: studentSkills.length,
+        skillDetails: skillDetails
       }
     });
   } catch (err) {

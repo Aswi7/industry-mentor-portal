@@ -16,6 +16,15 @@ const sessionSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  type: {
+    type: String,
+    enum: ["FREE", "PAID"],
+    default: "FREE"
+  },
+  price: {
+    type: Number,
+    default: 0
+  },
   status: {
     type: String,
     enum: ["OPEN", "REQUESTED", "ACCEPTED", "REJECTED", "COMPLETED", "CANCELED"],

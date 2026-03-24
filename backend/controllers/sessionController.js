@@ -110,7 +110,7 @@ const requestSession = async (req, res) => {
 // Mentor creates an open session
 const createSessionByMentor = async (req, res) => {
   try {
-    const { topic, title, startsAt, endsAt } = req.body;
+    const { topic, title, startsAt, endsAt, type, price } = req.body;
     const normalizedTopic = (topic || title || "").trim();
 
     if (!normalizedTopic) {
@@ -138,7 +138,9 @@ const createSessionByMentor = async (req, res) => {
       topic: normalizedTopic,
       startsAt: startInput,
       endsAt: endInput,
-      status: "OPEN"
+      status: "OPEN",
+      type: type || "FREE",
+      price: type === "PAID" ? (price || 0) : 0
     });
 
     // Google Meet is optional: create it only when Calendar is connected and OAuth is configured.
