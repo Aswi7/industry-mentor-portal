@@ -12,7 +12,8 @@ const {
   cancelSession,
   getMentorSessions, 
   getOpenSessionsForStudents,
-  completeSession
+  completeSession,
+  refreshSessionMeetingLink
 } = require("../controllers/sessionController");
 
 
@@ -22,6 +23,7 @@ router.post("/request", protect, studentOnly, requestSession);
 // Mentor creates open session
 router.post("/mentor-create", protect, mentorOnly, createSessionByMentor);
 router.delete("/mentor-cancel/:sessionId", protect, mentorOnly, mentorCancelSession);
+router.post("/refresh-link/:sessionId", protect, mentorOnly, refreshSessionMeetingLink);
 
 // Students view all open sessions created by mentors
 router.get("/open", protect, studentOnly, getOpenSessionsForStudents);

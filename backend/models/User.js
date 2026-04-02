@@ -74,7 +74,7 @@ const userSchema = new mongoose.Schema({
   mentorStatus: {
     type: String,
     enum: mentorStatus,
-    default: "PENDING", // Mentor approval workflow
+    default: "ACTIVE", // Set to ACTIVE by default as requested
   },
   // Optional profile info
   profilePicture: {

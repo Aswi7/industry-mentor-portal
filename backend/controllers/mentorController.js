@@ -3,7 +3,7 @@ const Session = require("../models/Session");
 const { google } = require("googleapis");
 const { markExpiredSessionsAsCompleted } = require("../services/sessionStatus");
 
-const createGoogleMeetForSession = async ({ mentor, student, session, startsAt, endsAt }) => {
+const createGoogleMeetForSession = async ({ mentor, student, session, startsAt, endsAt, eventId }) => {
   if (!mentor?.googleRefreshToken) {
     throw new Error("Google Calendar not connected. Connect your Google account first.");
   }
@@ -25,27 +25,42 @@ const createGoogleMeetForSession = async ({ mentor, student, session, startsAt, 
   const calendar = google.calendar({ version: "v3", auth: oauth2Client });
   const requestId = `mentor-session-${session._id}-${Date.now()}`;
 
-  const event = await calendar.events.insert({
-    calendarId: "primary",
-    conferenceDataVersion: 1,
-    requestBody: {
-      summary: `Mentor Session: ${session.topic}`,
-      description: `Mentor: ${mentor.name}\nStudent: ${student?.name || "N/A"}`,
-      start: {
-        dateTime: startsAt.toISOString(),
-      },
-      end: {
-        dateTime: endsAt.toISOString(),
-      },
-      attendees: student?.email ? [{ email: student.email }] : [],
-      conferenceData: {
-        createRequest: {
-          requestId,
-          conferenceSolutionKey: { type: "hangoutsMeet" },
-        },
+  const requestBody = {
+    summary: `Mentor Session: ${session.topic}`,
+    description: `Mentor: ${mentor.name}\nStudent: ${student?.name || "N/A"}`,
+    start: {
+      dateTime: startsAt.toISOString(),
+    },
+    end: {
+      dateTime: endsAt.toISOString(),
+    },
+    attendees: [
+      ...(student?.email ? [{ email: student.email }] : []),
+      ...(mentor?.email ? [{ email: mentor.email, responseStatus: "accepted" }] : []),
+    ],
+    conferenceData: {
+      createRequest: {
+        requestId,
+        conferenceSolutionKey: { type: "hangoutsMeet" },
       },
     },
-  });
+  };
+
+  let event;
+  if (eventId) {
+    event = await calendar.events.patch({
+      calendarId: "primary",
+      eventId: eventId,
+      conferenceDataVersion: 1,
+      requestBody: requestBody,
+    });
+  } else {
+    event = await calendar.events.insert({
+      calendarId: "primary",
+      conferenceDataVersion: 1,
+      requestBody: requestBody,
+    });
+  }
 
   return {
     meetingLink:
@@ -229,6 +244,7 @@ const getMentorSessions = async (req, res) => {
             session,
             startsAt: startInput,
             endsAt: endInput,
+            eventId: session.googleEventId,
           });
 
           if (meetingLink) session.meetingLink = meetingLink;

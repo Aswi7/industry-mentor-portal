@@ -16,7 +16,24 @@ const resolveUserFromToken = (token) => {
 
 const registerUser = async (req, res) => {
   try {
-    const { name, email, password, role, skills, domain, studentSkills, studentDomain, phone } = req.body;
+    const { 
+      name, 
+      email, 
+      password, 
+      role, 
+      skills, 
+      domain, 
+      studentSkills, 
+      studentDomain, 
+      phone,
+      company,
+      designation,
+      yearsOfExperience,
+      bio
+    } = req.body;
+    
+    console.log("Registering user:", { name, email, role });
+
     const normalizedEmail = String(email || "").trim().toLowerCase();
 
     if (!name || !normalizedEmail || !password) {
@@ -30,17 +47,23 @@ const registerUser = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const user = await User.create({
+    const userData = {
       name,
       email: normalizedEmail,
       phone,
       password: hashedPassword,
-      role: role || "STUDENT",
-      skills,
+      role: (role || "STUDENT").toUpperCase(),
+      skills: Array.isArray(skills) ? skills : [],
       domain,
-      studentSkills,
+      studentSkills: Array.isArray(studentSkills) ? studentSkills : [],
       studentDomain,
-    });
+      company,
+      designation,
+      yearsOfExperience: (yearsOfExperience !== undefined && yearsOfExperience !== "") ? Number(yearsOfExperience) : undefined,
+      bio
+    };
+
+    const user = await User.create(userData);
 
     const token = jwt.sign(
       { id: user._id, role: user.role },
@@ -56,8 +79,8 @@ const registerUser = async (req, res) => {
       user: userResponse,
     });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error" });
+    console.error("Registration Error Detail:", err);
+    res.status(500).json({ message: err.message || "Server error during registration" });
   }
 };
 

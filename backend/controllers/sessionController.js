@@ -4,7 +4,7 @@ const Notification = require("../models/Notification");
 const { google } = require("googleapis");
 const { markExpiredSessionsAsCompleted } = require("../services/sessionStatus");
 
-const createGoogleMeetForSession = async ({ mentor, student, session, startsAt, endsAt }) => {
+const createGoogleMeetForSession = async ({ mentor, student, session, startsAt, endsAt, eventId }) => {
   if (!mentor?.googleRefreshToken) {
     throw new Error("Google Calendar not connected. Connect your Google account first.");
   }
@@ -26,27 +26,42 @@ const createGoogleMeetForSession = async ({ mentor, student, session, startsAt, 
   const calendar = google.calendar({ version: "v3", auth: oauth2Client });
   const requestId = `mentor-session-${session._id}-${Date.now()}`;
 
-  const event = await calendar.events.insert({
-    calendarId: "primary",
-    conferenceDataVersion: 1,
-    requestBody: {
-      summary: `Mentor Session: ${session.topic}`,
-      description: `Mentor: ${mentor.name}\nStudent: ${student?.name || "N/A"}`,
-      start: {
-        dateTime: startsAt.toISOString(),
-      },
-      end: {
-        dateTime: endsAt.toISOString(),
-      },
-      attendees: student?.email ? [{ email: student.email }] : [],
-      conferenceData: {
-        createRequest: {
-          requestId,
-          conferenceSolutionKey: { type: "hangoutsMeet" },
-        },
+  const requestBody = {
+    summary: `Mentor Session: ${session.topic}`,
+    description: `Mentor: ${mentor.name}\nStudent: ${student?.name || "N/A"}`,
+    start: {
+      dateTime: startsAt.toISOString(),
+    },
+    end: {
+      dateTime: endsAt.toISOString(),
+    },
+    attendees: [
+      ...(student?.email ? [{ email: student.email }] : []),
+      ...(mentor?.email ? [{ email: mentor.email, responseStatus: "accepted" }] : []),
+    ],
+    conferenceData: {
+      createRequest: {
+        requestId,
+        conferenceSolutionKey: { type: "hangoutsMeet" },
       },
     },
-  });
+  };
+
+  let event;
+  if (eventId) {
+    event = await calendar.events.patch({
+      calendarId: "primary",
+      eventId: eventId,
+      conferenceDataVersion: 1,
+      requestBody: requestBody,
+    });
+  } else {
+    event = await calendar.events.insert({
+      calendarId: "primary",
+      conferenceDataVersion: 1,
+      requestBody: requestBody,
+    });
+  }
 
   return {
     meetingLink:
@@ -75,6 +90,22 @@ const requestSession = async (req, res) => {
       session.status = "REQUESTED";
       await session.save();
 
+      // Create notification for mentor
+      try {
+        const student = await User.findById(req.user.id);
+        await Notification.create({
+          recipient: session.mentor,
+          sender: req.user.id,
+          type: "SESSION_REQUESTED",
+          title: "New Session Request",
+          message: `${student.name} has requested to join your session on "${session.topic}".`,
+          relatedId: session._id,
+          relatedModel: "Session"
+        });
+      } catch (notifErr) {
+        console.error("Notification failed:", notifErr.message);
+      }
+
       return res.status(201).json({ message: "Session requested", session });
     }
 
@@ -100,6 +131,22 @@ const requestSession = async (req, res) => {
       topic,
       status: "REQUESTED"
     });
+
+    // Create notification for mentor
+    try {
+      const student = await User.findById(req.user.id);
+      await Notification.create({
+        recipient: mentorId,
+        sender: req.user.id,
+        type: "SESSION_REQUESTED",
+        title: "New Session Request",
+        message: `${student.name} has requested a session on "${topic}".`,
+        relatedId: session._id,
+        relatedModel: "Session"
+      });
+    } catch (notifErr) {
+      console.error("Notification failed:", notifErr.message);
+    }
 
     return res.status(201).json({ message: "Session requested", session });
   } catch (err) {
@@ -159,8 +206,10 @@ const createSessionByMentor = async (req, res) => {
         session.googleEventId = googleEventId;
         await session.save();
       } catch (googleErr) {
-        // Don't block scheduling if Google Meet creation fails.
         console.warn("Google Meet creation skipped:", googleErr?.message || googleErr);
+        if (googleErr.message?.includes("invalid_grant") || googleErr.response?.data?.error === "invalid_grant") {
+           await User.findByIdAndUpdate(req.user.id, { $unset: { googleRefreshToken: 1, googleCalendarConnectedAt: 1 } });
+        }
       }
     }
 
@@ -246,8 +295,8 @@ const acceptSession = async (req, res) => {
 
     session.status = "ACCEPTED";
 
-    // Best-effort: create Google Meet after a student is assigned (even if a previous fallback link exists).
-    if (!session.googleEventId && session.startsAt && session.endsAt) {
+    // Ensure Google Meet is created/updated with the assigned student.
+    if (session.startsAt && session.endsAt) {
       const startInput = new Date(session.startsAt);
       const endInput = new Date(session.endsAt);
 
@@ -263,12 +312,13 @@ const acceptSession = async (req, res) => {
               session,
               startsAt: startInput,
               endsAt: endInput,
+              eventId: session.googleEventId,
             });
 
             session.meetingLink = meetingLink;
             session.googleEventId = googleEventId;
           } catch (googleErr) {
-            console.warn("Google Meet creation skipped:", googleErr?.message || googleErr);
+            console.warn("Google Meet update/creation skipped:", googleErr?.message || googleErr);
           }
         }
       }
@@ -343,18 +393,18 @@ const getMentorSessions = async (req, res) => {
       let attempts = 0;
 
       for (const session of sessions) {
-        if (attempts >= 5) break;
-        if (session.status !== "ACCEPTED") continue;
-        if (session.googleEventId) continue;
+        if (attempts >= 10) break;
+        if (session.status !== "ACCEPTED" && session.status !== "OPEN") continue;
+        if (session.meetingLink && session.googleEventId) continue;
         if (!session.startsAt || !session.endsAt) continue;
 
         const startMs = new Date(session.startsAt).getTime();
         const endMs = new Date(session.endsAt).getTime();
         if (Number.isNaN(startMs) || Number.isNaN(endMs) || endMs <= startMs) continue;
 
-        // Only attempt near the scheduled window (30m before start -> 60m after end).
-        if (now < startMs - 30 * 60 * 1000) continue;
-        if (now > endMs + 60 * 60 * 1000) continue;
+        // Attempt backfill if within 24 hours of start or already started/ended recently
+        if (now < startMs - 24 * 60 * 60 * 1000) continue;
+        if (now > endMs + 24 * 60 * 60 * 1000) continue;
 
         try {
           const { meetingLink, googleEventId } = await createGoogleMeetForSession({
@@ -363,6 +413,7 @@ const getMentorSessions = async (req, res) => {
             session,
             startsAt: new Date(session.startsAt),
             endsAt: new Date(session.endsAt),
+            eventId: session.googleEventId,
           });
 
           session.meetingLink = meetingLink;
@@ -371,6 +422,12 @@ const getMentorSessions = async (req, res) => {
           attempts += 1;
         } catch (googleErr) {
           console.warn("Google Meet backfill skipped:", googleErr?.message || googleErr);
+          
+          // If the token is invalid/revoked, clear it so the UI prompts for re-connection
+          if (googleErr.message?.includes("invalid_grant") || googleErr.response?.data?.error === "invalid_grant") {
+             await User.findByIdAndUpdate(req.user.id, { $unset: { googleRefreshToken: 1, googleCalendarConnectedAt: 1 } });
+             break; // Stop attempting for this request
+          }
           attempts += 1;
         }
       }
@@ -437,7 +494,45 @@ const completeSession = async (req, res) => {
   }
 };
 
+const refreshSessionMeetingLink = async (req, res) => {
+  try {
+    const session = await Session.findById(req.params.sessionId);
+    if (!session) return res.status(404).json({ message: "Session not found" });
+    if (session.mentor.toString() !== req.user.id) return res.status(403).json({ message: "Not authorized" });
 
+    const mentor = await User.findById(req.user.id).select("name email googleRefreshToken");
+    if (!mentor?.googleRefreshToken) return res.status(400).json({ message: "Google Calendar not connected" });
+
+    const student = session.student ? await User.findById(session.student).select("name email") : null;
+
+    try {
+      const { meetingLink, googleEventId } = await createGoogleMeetForSession({
+        mentor,
+        student,
+        session,
+        startsAt: session.startsAt,
+        endsAt: session.endsAt,
+        eventId: session.googleEventId,
+      });
+
+      session.meetingLink = meetingLink;
+      session.googleEventId = googleEventId;
+      await session.save();
+
+      res.status(200).json({ message: "Meeting link refreshed", session });
+    } catch (googleErr) {
+      console.error("Manual refresh failed:", googleErr.message);
+      if (googleErr.message?.includes("invalid_grant") || googleErr.response?.data?.error === "invalid_grant") {
+        await User.findByIdAndUpdate(req.user.id, { $unset: { googleRefreshToken: 1, googleCalendarConnectedAt: 1 } });
+        return res.status(400).json({ message: "Google session expired. Please reconnect your calendar." });
+      }
+      throw googleErr;
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: err.message || "Server error" });
+  }
+};
 
 
 // EXPORT ALL
@@ -451,5 +546,6 @@ module.exports = {
   getMentorSessions,
   getStudentSessions,
   getOpenSessionsForStudents,
-  completeSession
+  completeSession,
+  refreshSessionMeetingLink
 };
