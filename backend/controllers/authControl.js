@@ -53,6 +53,7 @@ const registerUser = async (req, res) => {
       phone,
       password: hashedPassword,
       role: (role || "STUDENT").toUpperCase(),
+      mentorStatus: (role || "STUDENT").toUpperCase() === "MENTOR" ? "PENDING" : undefined,
       skills: Array.isArray(skills) ? skills : [],
       domain,
       studentSkills: Array.isArray(studentSkills) ? studentSkills : [],
@@ -87,7 +88,10 @@ const registerUser = async (req, res) => {
 const linkedinAuth = async (req, res) => {
   try {
     const requestedRole = String(req.query.role || "STUDENT").toUpperCase();
-    const oauthRole = requestedRole === "MENTOR" ? "MENTOR" : "STUDENT";
+    if (requestedRole === "MENTOR") {
+      return res.status(400).json({ message: "LinkedIn sign-in is not available for mentors" });
+    }
+    const oauthRole = "STUDENT";
     const clientId = process.env.LINKEDIN_CLIENT_ID;
     const redirectUri = process.env.LINKEDIN_REDIRECT_URI || "http://localhost:5000/api/auth/linkedin/callback";
 
@@ -185,6 +189,7 @@ const linkedinCallback = async (req, res) => {
         email: email.toLowerCase(),
         password: hashedPassword,
         role: roleFromState,
+        mentorStatus: roleFromState === "MENTOR" ? "PENDING" : undefined,
         linkedinId,
       });
     } else if (!user.linkedinId) {
@@ -417,6 +422,7 @@ const googleCallback = async (req, res) => {
         email,
         password: hashedPassword,
         role: roleFromState,
+        mentorStatus: roleFromState === "MENTOR" ? "PENDING" : undefined,
         googleId,
       });
     } else if (!user.googleId) {

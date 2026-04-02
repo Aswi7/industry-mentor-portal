@@ -52,7 +52,7 @@ router.get("/", protect, async (req, res) => {
       status: { $in: ["ACCEPTED", "COMPLETED"] }
     });
 
-    const mentorIds = sessions.map((session) => session.mentor);
+    const mentorIds = [...new Set(sessions.map((session) => session.mentor.toString()))];
     const resources = await Resource.find({ mentor: { $in: mentorIds } }).populate("mentor", "name");
 
     return res.json(resources);

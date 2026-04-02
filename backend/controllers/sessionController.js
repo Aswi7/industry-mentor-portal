@@ -72,6 +72,15 @@ const createGoogleMeetForSession = async ({ mentor, student, session, startsAt, 
   };
 };
 
+const formatSessionDate = (dateInput) => {
+  const date = new Date(dateInput);
+  if (Number.isNaN(date.getTime())) return "an upcoming date";
+  return new Intl.DateTimeFormat("en-IN", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(date);
+};
+
 const requestSession = async (req, res) => {
   try {
     const { sessionId, mentorId, topic } = req.body;
@@ -211,6 +220,26 @@ const createSessionByMentor = async (req, res) => {
            await User.findByIdAndUpdate(req.user.id, { $unset: { googleRefreshToken: 1, googleCalendarConnectedAt: 1 } });
         }
       }
+    }
+
+    try {
+      const students = await User.find({ role: "STUDENT" }).select("_id");
+      if (students.length > 0) {
+        const formattedDate = formatSessionDate(startInput);
+        await Notification.insertMany(
+          students.map((student) => ({
+            recipient: student._id,
+            sender: req.user.id,
+            type: "SESSION_CREATED",
+            title: "New Mentor Session Available",
+            message: `${mentor.name} created a session on "${normalizedTopic}" scheduled for ${formattedDate}.`,
+            relatedId: session._id,
+            relatedModel: "Session",
+          }))
+        );
+      }
+    } catch (notifErr) {
+      console.error("Session creation notification failed:", notifErr.message);
     }
 
     return res.status(201).json({ message: "Open session created", session });
@@ -445,7 +474,7 @@ const getStudentSessions = async (req, res) => {
     await markExpiredSessionsAsCompleted();
 
     const sessions = await Session.find({ student: req.user.id })
-      .populate("mentor", "name email")
+      .populate("mentor", "name email skills domain bio company designation yearsOfExperience profilePicture")
       .populate("student", "name email");
 
     res.status(200).json({ sessions });
@@ -460,7 +489,7 @@ const getOpenSessionsForStudents = async (req, res) => {
     await markExpiredSessionsAsCompleted();
 
     const sessions = await Session.find({ status: "OPEN" })
-      .populate("mentor", "name email skills domain")
+      .populate("mentor", "name email skills domain bio company designation yearsOfExperience profilePicture")
       .sort({ createdAt: -1 });
 
     res.status(200).json({ sessions });

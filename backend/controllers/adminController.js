@@ -4,7 +4,7 @@ const Session = require("../models/Session");
 // Get all pending mentors
 const getPendingMentors = async (req, res) => {
   try {
-    const pendingMentors = await User.find({ role: "MENTOR", mentorStatus: "PENDING" });
+    const pendingMentors = await User.find({ role: "MENTOR", mentorStatus: "PENDING" }).select("-password");
     res.status(200).json({ pendingMentors });
   } catch (err) {
     console.error(err);
@@ -28,7 +28,10 @@ const approveMentor = async (req, res) => {
     mentor.mentorStatus = "VERIFIED"; // Or "ACTIVE" if you want
     await mentor.save();
 
-    res.status(200).json({ message: "Mentor approved successfully", mentor });
+    const mentorResponse = mentor.toObject();
+    delete mentorResponse.password;
+
+    res.status(200).json({ message: "Mentor approved successfully", mentor: mentorResponse });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error" });
@@ -50,7 +53,10 @@ const rejectMentor = async (req, res) => {
     mentor.mentorStatus = "REJECTED";
     await mentor.save();
 
-    res.status(200).json({ message: "Mentor rejected successfully" });
+    const mentorResponse = mentor.toObject();
+    delete mentorResponse.password;
+
+    res.status(200).json({ message: "Mentor rejected successfully", mentor: mentorResponse });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error" });

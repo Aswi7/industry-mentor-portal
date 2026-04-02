@@ -12,7 +12,7 @@ const notificationSchema = new mongoose.Schema({
   },
   type: {
     type: String,
-    enum: ["SESSION_ACCEPTED", "SESSION_REQUESTED", "SESSION_CANCELED", "GENERAL"],
+    enum: ["SESSION_ACCEPTED", "SESSION_REQUESTED", "SESSION_CANCELED", "SESSION_CREATED", "GENERAL"],
     required: true
   },
   title: {
