@@ -4,6 +4,7 @@ import axios from "axios";
 import CreateSessionModal from "../student/CreateSessionModal";
 
 const MentorSessions = () => {
+  
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -76,16 +77,75 @@ const MentorSessions = () => {
   };
 
   const getJoinMeta = (session) => {
-    if (!session?.meetingLink || (session.status !== "ACCEPTED" && session.status !== "OPEN")) {
-      return { canJoin: false };
-    }
     const startTs = session.startsAt ? new Date(session.startsAt).getTime() : NaN;
     const endTs = session.endsAt ? new Date(session.endsAt).getTime() : null;
+    const graceBeforeStartMs = 10 * 60 * 1000; 
     const graceAfterEndMs = 60 * 60 * 1000;
-    if (Number.isNaN(startTs)) return { canJoin: false };
-    if (nowTs < startTs - 10 * 60 * 1000) return { canJoin: false };
-    if (endTs && !Number.isNaN(endTs) && nowTs > endTs + graceAfterEndMs) return { canJoin: false };
+
+    if (session.status !== "ACCEPTED" && session.status !== "OPEN") {
+      return { canJoin: false, reason: "Inactive" };
+    }
+
+    if (Number.isNaN(startTs)) return { canJoin: false, reason: "No Date" };
+
+    // Strict 10-minute window
+    if (nowTs < startTs - graceBeforeStartMs) {
+      return { canJoin: false, reason: "Scheduled" };
+    }
+
+    if (endTs && !Number.isNaN(endTs) && nowTs > endTs + graceAfterEndMs) {
+      return { canJoin: false, reason: "Expired" };
+    }
+
+    // Always allow clicking if it's "time", we handle missing links in the click handler
     return { canJoin: true };
+  };
+
+  const handleJoinClick = async (session) => {
+    if (session.meetingLink) {
+      window.open(session.meetingLink, "_blank");
+      return;
+    }
+
+    // Link missing, try to generate it now
+    try {
+      const token = localStorage.getItem("token");
+      const headers = { Authorization: `Bearer ${token}` };
+      const res = await axios.post(`http://localhost:5000/api/sessions/refresh-link/${session._id}`, {}, { headers });
+      
+      if (res.data.session?.meetingLink) {
+        window.open(res.data.session.meetingLink, "_blank");
+        await fetchSessions();
+      } else {
+        throw new Error("Link could not be generated");
+      }
+    } catch (err) {
+      const msg = err.response?.data?.message || "";
+      if (msg.toLowerCase().includes("calendar not connected") || msg.toLowerCase().includes("expired")) {
+        if (window.confirm("Google Calendar is not connected or session expired. Connect now to enable meeting?")) {
+          handleConnectCalendar();
+        }
+      } else {
+        alert("Failed to join: " + (msg || "Check your Google connection"));
+      }
+    }
+  };
+
+  const handleRefreshLink = async (sessionId) => {
+    try {
+      const token = localStorage.getItem("token");
+      const headers = { Authorization: `Bearer ${token}` };
+      await axios.post(`http://localhost:5000/api/sessions/refresh-link/${sessionId}`, {}, { headers });
+      await fetchSessions();
+    } catch (err) {
+      console.error(err);
+      alert(err.response?.data?.message || "Failed to refresh link");
+    }
+  };
+
+  const handleConnectCalendar = () => {
+    const token = localStorage.getItem("token");
+    window.location.href = `http://localhost:5000/api/auth/google/calendar?token=${token}&next=/mentor/sessions`;
   };
 
   const handleCancelSession = async (sessionId) => {
@@ -176,29 +236,34 @@ const MentorSessions = () => {
                     </div>
                   </div>
 
-                  <div className="mt-auto pt-4 border-t border-gray-100 flex gap-2">
-                    {joinMeta.canJoin ? (
+                  <div className="mt-auto pt-4 border-t border-gray-100 flex flex-col gap-2">
+                    <div className="flex gap-2">
                       <button
-                        onClick={() => window.open(session.meetingLink, "_blank")}
-                        className="flex-1 btn-primary py-2 text-xs flex items-center justify-center gap-2"
+                        onClick={() => handleJoinClick(session)}
+                        disabled={!joinMeta.canJoin}
+                        className={`flex-1 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all ${
+                          joinMeta.canJoin 
+                            ? "bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-600/20" 
+                            : "bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200"
+                        }`}
                       >
-                        <Video size={14} /> Join Now
+                        <Video size={16} /> Join Now
                       </button>
-                    ) : (
+                      
                       <button
-                        disabled
-                        className="flex-1 btn-secondary py-2 text-xs opacity-50 cursor-not-allowed italic"
+                        onClick={() => handleCancelSession(session._id)}
+                        className="p-2.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all border border-transparent hover:border-red-100"
+                        title="Cancel Session"
                       >
-                        Scheduled
+                        <XCircle size={20} />
                       </button>
+                    </div>
+
+                    {!joinMeta.canJoin && (
+                      <p className="text-[10px] text-center font-bold text-gray-500 italic">
+                        {joinMeta.reason === "Scheduled" ? `Available in ${formatCountdown(session.startsAt)}` : joinMeta.reason}
+                      </p>
                     )}
-                    <button
-                      onClick={() => handleCancelSession(session._id)}
-                      className="p-2 text-gray-600 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
-                      title="Cancel Session"
-                    >
-                      <XCircle size={18} />
-                    </button>
                   </div>
                 </div>
               );

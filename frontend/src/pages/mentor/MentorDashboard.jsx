@@ -1,4 +1,5 @@
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import NotificationDropdown from "../components/NotificationDropdown";
 import { 
   LayoutDashboard, 
   CalendarDays, 
@@ -100,10 +101,7 @@ export default function MentorDashboard() {
           </div>
 
           <div className="flex items-center gap-5">
-            <button className="relative p-2 text-gray-600 hover:bg-gray-100 rounded-full transition-colors">
-              <Bell size={20} />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
-            </button>
+            <NotificationDropdown />
             <button className="p-2 text-gray-600 hover:bg-gray-100 rounded-full transition-colors">
               <Settings size={20} />
             </button>

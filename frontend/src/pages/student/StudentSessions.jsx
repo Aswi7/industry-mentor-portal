@@ -75,15 +75,16 @@ const StudentSessions = () => {
 
     const startMs = session.startsAt ? new Date(session.startsAt).getTime() : null;
     const endMs = session.endsAt ? new Date(session.endsAt).getTime() : null;
-    const graceAfterEndMs = 60 * 60 * 1000;
+    const graceBeforeStartMs = 10 * 60 * 1000; // 10 mins
+    const graceAfterEndMs = 60 * 60 * 1000; // 60 mins
 
     if (!startMs || Number.isNaN(startMs)) {
       return { canJoin: false, label: "Join Unavailable", hint: "Waiting for mentor schedule" };
     }
 
-    // Allow student to join up to 5 minutes early
-    if (now < startMs - 5 * 60 * 1000) {
-      return { canJoin: false, label: "Join (Locked)", hint: "Enabled 5 mins before start" };
+    // Enable 10 minutes before start
+    if (now < startMs - graceBeforeStartMs) {
+      return { canJoin: false, label: "Join Now", hint: "Enabled 10 mins before start" };
     }
 
     if (endMs && !Number.isNaN(endMs) && now > endMs + graceAfterEndMs) {

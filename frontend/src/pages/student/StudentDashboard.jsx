@@ -12,9 +12,9 @@ const StudentDashboard = () => {
       <div className="w-64 bg-primary-900 text-white flex flex-col shadow-xl">
 
         {/* Logo */}
-        <div className="p-8 text-2xl font-display font-black border-b border-white/10 flex items-center gap-3">
+        <div className="p-6 text-xl font-display font-black border-b border-white/10 flex items-center gap-2">
           <span className="bg-blue-500 p-1.5 rounded-lg shadow-lg">🎓</span>
-          <span className="tracking-tighter">Mentor<span className="text-blue-400">Connect</span></span>
+          <span className="tracking-tighter whitespace-nowrap">Mentor<span className="text-blue-400">Connect</span></span>
         </div>
 
         {/* Menu */}
