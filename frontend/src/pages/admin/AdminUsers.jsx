@@ -48,7 +48,9 @@ export default function AdminUsers() {
   }, []);
 
   const filteredUsers = useMemo(() => {
-    let filtered = users;
+    let filtered = users.filter(
+      (user) => !(user.role === "MENTOR" && user.mentorStatus === "REJECTED")
+    );
 
     if (roleFilter !== "ALL") {
       filtered = filtered.filter(u => u.role === roleFilter);

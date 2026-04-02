@@ -1,8 +1,10 @@
 import { Users, Calendar, Clock, CheckCircle, ArrowUpRight, MoreHorizontal } from "lucide-react";
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 export default function MentorOverview() {
+  const navigate = useNavigate();
   const [mentorName, setMentorName] = useState("");
   const [stats, setStats] = useState({ mentees: 0, upcoming: 0, pending: 0, completed: 0 });
   const [upcomingSessions, setUpcomingSessions] = useState([]);
@@ -10,38 +12,39 @@ export default function MentorOverview() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [nowTs, setNowTs] = useState(Date.now());
+  const [actioningId, setActioningId] = useState("");
+
+  const fetchData = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const headers = { Authorization: `Bearer ${token}` };
+
+      const [profileRes, statsRes, requestsRes, sessionsRes] = await Promise.all([
+        axios.get("http://localhost:5000/api/mentor/profile", { headers }),
+        axios.get("http://localhost:5000/api/mentor/stats", { headers }),
+        axios.get("http://localhost:5000/api/mentor/pending-requests", { headers }),
+        axios.get("http://localhost:5000/api/mentor/sessions", { headers })
+      ]);
+
+      setMentorName(profileRes.data.mentor.name);
+      setStats(statsRes.data.stats);
+      setPendingRequests((requestsRes.data.pendingRequests || []).slice(0, 5));
+
+      const upcoming = sessionsRes.data.sessions
+        .filter((s) => s.status === "OPEN" || s.status === "ACCEPTED")
+        .sort((a, b) => new Date(a.startsAt) - new Date(b.startsAt))
+        .slice(0, 5);
+      setUpcomingSessions(upcoming);
+      setError(null);
+    } catch (err) {
+      console.error(err);
+      setError("Failed to load dashboard data");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const headers = { Authorization: `Bearer ${token}` };
-
-        const [profileRes, statsRes, requestsRes, sessionsRes] = await Promise.all([
-          axios.get("http://localhost:5000/api/mentor/profile", { headers }),
-          axios.get("http://localhost:5000/api/mentor/stats", { headers }),
-          axios.get("http://localhost:5000/api/mentor/pending-requests", { headers }),
-          axios.get("http://localhost:5000/api/mentor/sessions", { headers })
-        ]);
-
-        setMentorName(profileRes.data.mentor.name);
-        setStats(statsRes.data.stats);
-        setPendingRequests(requestsRes.data.pendingRequests.slice(0, 5));
-        
-        const upcoming = sessionsRes.data.sessions
-          .filter((s) => s.status === "OPEN" || s.status === "ACCEPTED")
-          .sort((a, b) => new Date(a.startsAt) - new Date(b.startsAt))
-          .slice(0, 5);
-        setUpcomingSessions(upcoming);
-
-        setLoading(false);
-      } catch (err) {
-        console.error(err);
-        setError("Failed to load dashboard data");
-        setLoading(false);
-      }
-    };
-
     fetchData();
   }, []);
 
@@ -49,6 +52,23 @@ export default function MentorOverview() {
     const timer = setInterval(() => setNowTs(Date.now()), 60000);
     return () => clearInterval(timer);
   }, []);
+
+  const handleRequestAction = async (sessionId, action) => {
+    try {
+      const token = localStorage.getItem("token");
+      const headers = { Authorization: `Bearer ${token}` };
+      setActioningId(sessionId);
+
+      await axios.put(`http://localhost:5000/api/sessions/${action}/${sessionId}`, {}, { headers });
+      await fetchData();
+      window.dispatchEvent(new Event("sessionChanged"));
+    } catch (err) {
+      console.error(err);
+      alert(err.response?.data?.message || `Failed to ${action} session`);
+    } finally {
+      setActioningId("");
+    }
+  };
 
   const canJoinSession = (session) => {
     if (!session?.meetingLink || (session.status !== "ACCEPTED" && session.status !== "OPEN")) return false;
@@ -242,10 +262,18 @@ export default function MentorOverview() {
                     "{request.topic}"
                   </p>
                   <div className="flex gap-2">
-                    <button className="flex-1 bg-primary-900 text-white text-[11px] font-bold py-2 rounded-xl hover:bg-primary-800 transition-colors">
-                      Approve
+                    <button
+                      onClick={() => handleRequestAction(request._id, "accept")}
+                      disabled={actioningId === request._id}
+                      className="flex-1 bg-primary-900 text-white text-[11px] font-bold py-2 rounded-xl hover:bg-primary-800 transition-colors disabled:opacity-50"
+                    >
+                      {actioningId === request._id ? "Processing..." : "Approve"}
                     </button>
-                    <button className="px-3 py-2 bg-gray-50 text-gray-600 rounded-xl hover:bg-red-50 hover:text-red-500 transition-all">
+                    <button
+                      onClick={() => handleRequestAction(request._id, "reject")}
+                      disabled={actioningId === request._id}
+                      className="px-3 py-2 bg-gray-50 text-gray-600 rounded-xl hover:bg-red-50 hover:text-red-500 transition-all disabled:opacity-50"
+                    >
                       <XIcon size={14} />
                     </button>
                   </div>
@@ -262,7 +290,10 @@ export default function MentorOverview() {
           </div>
           
           <div className="p-4 border-t border-gray-50">
-            <button className="w-full py-2 text-xs font-bold text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all">
+            <button
+              onClick={() => navigate("/mentor/mentees")}
+              className="w-full py-2 text-xs font-bold text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all"
+            >
               Manage All Requests
             </button>
           </div>

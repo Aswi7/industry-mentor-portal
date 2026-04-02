@@ -63,6 +63,7 @@ const NotificationDropdown = () => {
     switch (type) {
       case "SESSION_ACCEPTED": return <CheckCircle2 size={16} className="text-green-500" />;
       case "SESSION_REQUESTED": return <Calendar size={16} className="text-blue-500" />;
+      case "SESSION_CREATED": return <Calendar size={16} className="text-indigo-500" />;
       case "SESSION_CANCELED": return <X size={16} className="text-red-500" />;
       default: return <Info size={16} className="text-gray-500" />;
     }

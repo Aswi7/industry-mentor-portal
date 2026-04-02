@@ -1,47 +1,43 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+
+const isMentorApproved = (status) => ["VERIFIED", "ACTIVE"].includes(status);
 
 const LinkedInCallback = () => {
   const navigate = useNavigate();
-  const [error, setError] = useState("");
+
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get("token");
+  const userRaw = params.get("user");
+  const loginError = params.get("error");
+
+  const { user, error } = useMemo(() => {
+    if (loginError) return { user: null, error: loginError };
+    if (!token || !userRaw) return { user: null, error: "LinkedIn login failed." };
+    try {
+      return { user: JSON.parse(userRaw), error: "" };
+    } catch {
+      return { user: null, error: "Unable to process LinkedIn login response." };
+    }
+  }, [loginError, token, userRaw]);
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const token = params.get("token");
-    const userRaw = params.get("user");
-    const loginError = params.get("error");
+    if (error) return;
 
-    if (loginError) {
-      setError(loginError);
-      return;
-    }
+    localStorage.setItem("token", token);
+    localStorage.setItem("user", JSON.stringify(user));
 
-    if (!token || !userRaw) {
-      setError("LinkedIn login failed.");
-      return;
-    }
-
-    try {
-      const user = JSON.parse(userRaw);
-      localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify(user));
-
-      const role = (user.role || "").toLowerCase();
-      if (role === "mentor") {
-        const mentorStatus = user.mentorStatus;
-        if (mentorStatus === "VERIFIED" || mentorStatus === "ACTIVE") {
-          navigate("/mentor", { replace: true });
-        } else {
-          navigate("/mentor/profile", { replace: true });
-        }
+    const role = (user.role || "").toLowerCase();
+    if (role === "mentor") {
+      if (isMentorApproved(user.mentorStatus)) {
+        navigate("/mentor", { replace: true });
+      } else {
+        navigate("/mentor/profile", { replace: true });
       }
-      else if (role === "admin") navigate("/admin", { replace: true });
-      else navigate("/student", { replace: true });
-    } catch (err) {
-      console.error(err);
-      setError("Unable to process LinkedIn login response.");
     }
-  }, [navigate]);
+    else if (role === "admin") navigate("/admin", { replace: true });
+    else navigate("/student", { replace: true });
+  }, [navigate, error, token, user]);
 
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center">

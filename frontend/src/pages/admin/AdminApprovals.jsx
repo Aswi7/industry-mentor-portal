@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { Check, X } from "lucide-react";
+import { Check, Eye, X } from "lucide-react";
 
 const getInitials = (name = "") =>
   name
@@ -15,6 +15,7 @@ const AdminApprovals = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [actioningId, setActioningId] = useState("");
+  const [selectedMentor, setSelectedMentor] = useState(null);
 
   useEffect(() => {
     const fetchPendingMentors = async () => {
@@ -42,6 +43,7 @@ const AdminApprovals = () => {
 
       await axios.put(`http://localhost:5000/api/admin/mentors/${action}/${mentorId}`, {}, { headers });
       setMentors((prev) => prev.filter((mentor) => mentor._id !== mentorId));
+      setSelectedMentor((prev) => (prev?._id === mentorId ? null : prev));
     } catch (err) {
       console.error(err);
       setError(`Failed to ${action} mentor`);
@@ -106,6 +108,14 @@ const AdminApprovals = () => {
             {/* Right Section (Buttons) */}
             <div className="flex gap-4">
               <button
+                onClick={() => setSelectedMentor(mentor)}
+                className="flex items-center gap-2 border border-slate-300 text-slate-700 px-5 py-2 rounded-lg hover:bg-slate-50 transition"
+              >
+                <Eye size={18} />
+                View Profile
+              </button>
+
+              <button
                 onClick={() => handleAction(mentor._id, "approve")}
                 disabled={actioningId === mentor._id}
                 className="flex items-center gap-2 bg-green-600 text-white px-5 py-2 rounded-lg hover:bg-green-700 transition disabled:opacity-60"
@@ -131,6 +141,92 @@ const AdminApprovals = () => {
           </div>
         )}
       </div>
+
+      {selectedMentor && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 px-4">
+          <div className="w-full max-w-3xl rounded-2xl bg-white shadow-2xl border border-slate-200 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-start justify-between gap-4 p-6 border-b border-slate-200">
+              <div>
+                <h2 className="text-2xl font-bold text-slate-900">{selectedMentor.name}</h2>
+                <p className="text-slate-600 mt-1">{selectedMentor.email}</p>
+              </div>
+              <button
+                onClick={() => setSelectedMentor(null)}
+                className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+              >
+                Close
+              </button>
+            </div>
+
+            <div className="p-6 grid gap-6 md:grid-cols-2">
+              <div className="space-y-4">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-widest text-slate-500">Phone</p>
+                  <p className="mt-1 text-slate-800">{selectedMentor.phone || "-"}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-widest text-slate-500">Company</p>
+                  <p className="mt-1 text-slate-800">{selectedMentor.company || "-"}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-widest text-slate-500">Designation</p>
+                  <p className="mt-1 text-slate-800">{selectedMentor.designation || "-"}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-widest text-slate-500">Experience</p>
+                  <p className="mt-1 text-slate-800">
+                    {selectedMentor.yearsOfExperience === 0 || selectedMentor.yearsOfExperience
+                      ? `${selectedMentor.yearsOfExperience} years`
+                      : "-"}
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-widest text-slate-500">Domain</p>
+                  <p className="mt-1 text-slate-800">{selectedMentor.domain || "-"}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-widest text-slate-500">Status</p>
+                  <p className="mt-1 text-slate-800">{selectedMentor.mentorStatus || "-"}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-widest text-slate-500">Skills</p>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {(selectedMentor.skills?.length ? selectedMentor.skills : ["-"]).map((skill, index) => (
+                      <span
+                        key={`${skill}-${index}`}
+                        className="rounded-full bg-slate-100 px-3 py-1 text-sm font-medium text-slate-700"
+                      >
+                        {skill}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="md:col-span-2">
+                <p className="text-xs font-bold uppercase tracking-widest text-slate-500">Bio</p>
+                <p className="mt-2 whitespace-pre-wrap rounded-xl bg-slate-50 p-4 text-slate-700">
+                  {selectedMentor.bio || "No bio provided."}
+                </p>
+              </div>
+
+              {selectedMentor.profilePicture && (
+                <div className="md:col-span-2">
+                  <p className="text-xs font-bold uppercase tracking-widest text-slate-500">Profile Picture</p>
+                  <img
+                    src={`http://localhost:5000${selectedMentor.profilePicture}`}
+                    alt={`${selectedMentor.name} profile`}
+                    className="mt-3 h-40 w-40 rounded-2xl object-cover border border-slate-200"
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

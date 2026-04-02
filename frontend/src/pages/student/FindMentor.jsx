@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
-import { X, Briefcase, GraduationCap, Clock, Globe, User } from "lucide-react";
+import { X, Clock, Globe, Eye } from "lucide-react";
 
 const MentorDetailsModal = ({ mentor, onClose }) => {
   if (!mentor) return null;
@@ -17,9 +17,17 @@ const MentorDetailsModal = ({ mentor, onClose }) => {
 
         <div className="p-8">
           <div className="flex items-center gap-6 mb-8">
-            <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center text-blue-700 font-bold text-3xl shadow-inner">
-              {mentor.name?.charAt(0).toUpperCase()}
-            </div>
+            {mentor.profilePicture ? (
+              <img
+                src={`http://localhost:5000${mentor.profilePicture}`}
+                alt={`${mentor.name} profile`}
+                className="w-20 h-20 rounded-full object-cover shadow-inner border border-blue-100"
+              />
+            ) : (
+              <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center text-blue-700 font-bold text-3xl shadow-inner">
+                {mentor.name?.charAt(0).toUpperCase()}
+              </div>
+            )}
             <div>
               <h2 className="text-2xl font-bold text-gray-900">{mentor.name}</h2>
               <p className="text-blue-600 font-medium">{mentor.designation || "Mentor"}</p>
@@ -55,11 +63,15 @@ const MentorDetailsModal = ({ mentor, onClose }) => {
             <div>
               <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">Expertise</h3>
               <div className="flex flex-wrap gap-2">
-                {mentor.skills?.map((skill, i) => (
-                  <span key={i} className="px-3 py-1 bg-blue-50 text-blue-700 text-xs font-bold rounded-full border border-blue-100">
-                    {skill}
-                  </span>
-                )) || <span className="text-sm text-gray-400 italic">No skills listed</span>}
+                {mentor.skills?.length ? (
+                  mentor.skills.map((skill, i) => (
+                    <span key={i} className="px-3 py-1 bg-blue-50 text-blue-700 text-xs font-bold rounded-full border border-blue-100">
+                      {skill}
+                    </span>
+                  ))
+                ) : (
+                  <span className="text-sm text-gray-400 italic">No skills listed</span>
+                )}
               </div>
             </div>
           </div>
@@ -265,11 +277,22 @@ export default function FindMentor() {
               </div>
 
               <p className="text-sm text-gray-600 mb-2">{session.mentor?.email}</p>
+              {(session.mentor?.designation || session.mentor?.company) && (
+                <p className="text-sm text-gray-500 mb-2">
+                  <span className="font-semibold text-gray-700">Role:</span>{" "}
+                  {[session.mentor?.designation, session.mentor?.company].filter(Boolean).join(" at ")}
+                </p>
+              )}
               {session.mentor?.domain && (
                 <p className="text-sm text-gray-500 mb-2">
                   <span className="font-semibold text-gray-700">Domain:</span> {session.mentor.domain}
                 </p>
               )}
+              {session.mentor?.yearsOfExperience === 0 || session.mentor?.yearsOfExperience ? (
+                <p className="text-sm text-gray-500 mb-3">
+                  <span className="font-semibold text-gray-700">Experience:</span> {session.mentor.yearsOfExperience} years
+                </p>
+              ) : null}
 
               <div className="flex flex-wrap gap-2 mb-4">
                 {session.mentor?.skills && session.mentor.skills.length > 0 ? (
@@ -287,6 +310,13 @@ export default function FindMentor() {
               </div>
 
               <div className="flex gap-2">
+                <button
+                  onClick={() => setSelectedMentor(session.mentor)}
+                  className="px-4 border border-slate-300 text-slate-700 py-2 rounded-lg font-semibold hover:bg-slate-50 transition-colors flex items-center gap-2"
+                >
+                  <Eye size={18} />
+                  View Profile
+                </button>
                 <button
                   onClick={() => handleRequestSession(session._id)}
                   disabled={requestedMap[session._id]}

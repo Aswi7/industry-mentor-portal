@@ -39,6 +39,7 @@ const getInitials = (name) => {
 export default function MentorProfile() {
   const navigate = useNavigate();
   const storedUser = useMemo(() => getStoredUser() || {}, []);
+  const isApprovedMentor = ["VERIFIED", "ACTIVE"].includes(storedUser.mentorStatus);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -220,21 +221,35 @@ export default function MentorProfile() {
             <nav className="flex items-center gap-2 text-sm text-slate-500 mb-4">
               <span>Mentor</span>
               <ChevronRight size={14} />
-              <span className="text-blue-600 font-semibold">Profile Setup</span>
+              <span className="text-blue-600 font-semibold">{isApprovedMentor ? "My Profile" : "Profile Setup"}</span>
             </nav>
-            <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight">Complete Your Profile</h1>
+            <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight">
+              {isApprovedMentor ? "View & Edit Your Profile" : "Complete Your Profile"}
+            </h1>
             <p className="text-slate-600 mt-2 text-lg max-w-2xl">
-              Tell us about your expertise and background. This information helps students find the right mentor for their goals.
+              {isApprovedMentor
+                ? "Keep your profile up to date so students can understand your expertise, background, and mentoring style."
+                : "Tell us about your expertise and background. This information helps students find the right mentor for their goals."}
             </p>
           </div>
           <div className="flex gap-3">
+            {isApprovedMentor && (
+              <button
+                type="button"
+                onClick={() => navigate("/mentor")}
+                className="px-5 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 font-bold text-sm hover:bg-slate-50 transition-all flex items-center gap-2 shadow-sm"
+              >
+                <User size={18} />
+                Back to Dashboard
+              </button>
+            )}
             <button
               type="button"
-              onClick={() => navigate("/mentor/pending")}
+              onClick={() => navigate(isApprovedMentor ? "/mentor" : "/mentor/pending")}
               className="px-5 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 font-bold text-sm hover:bg-slate-50 transition-all flex items-center gap-2 shadow-sm"
             >
               <Info size={18} />
-              View Status
+              {isApprovedMentor ? "Dashboard Status" : "View Status"}
             </button>
           </div>
         </div>

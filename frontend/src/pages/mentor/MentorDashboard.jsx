@@ -5,10 +5,8 @@ import {
   CalendarDays, 
   Users, 
   BookOpen, 
-  Bell, 
   Search,
-  LogOut,
-  Settings
+  LogOut
 } from "lucide-react";
 
 export default function MentorDashboard() {
@@ -102,11 +100,13 @@ export default function MentorDashboard() {
 
           <div className="flex items-center gap-5">
             <NotificationDropdown />
-            <button className="p-2 text-gray-600 hover:bg-gray-100 rounded-full transition-colors">
-              <Settings size={20} />
-            </button>
             <div className="h-8 w-px bg-gray-200 mx-1"></div>
-            <div className="flex items-center gap-3 pl-2">
+            <button
+              type="button"
+              onClick={() => navigate("/mentor/profile")}
+              className="flex items-center gap-3 pl-2 rounded-xl hover:bg-gray-100 transition-colors px-2 py-1"
+              title="View and edit profile"
+            >
               <div className="text-right hidden sm:block">
                 <p className="text-xs font-bold text-gray-900 uppercase tracking-tighter">Status</p>
                 <p className="text-[10px] text-green-600 font-bold uppercase">Online</p>
@@ -114,7 +114,7 @@ export default function MentorDashboard() {
               <div className="w-9 h-9 rounded-lg bg-primary-100 text-primary-700 flex items-center justify-center font-bold">
                 {user.name?.charAt(0) || "M"}
               </div>
-            </div>
+            </button>
           </div>
         </header>
 

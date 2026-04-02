@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../services/api";
 import { 
@@ -6,18 +6,10 @@ import {
   Mail, 
   Lock, 
   Phone, 
-  Award, 
-  Globe, 
-  Linkedin, 
   GraduationCap, 
   ShieldCheck, 
-  ChevronRight,
   ArrowRight,
   CheckCircle2,
-  Camera,
-  Briefcase,
-  Plus,
-  Trash2
 } from "lucide-react";
 
 function Register() {
@@ -31,42 +23,11 @@ function Register() {
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   
-  // Mentor Specific Fields
-  const [skills, setSkills] = useState([]);
   const [skillInput, setSkillInput] = useState("");
   const [domain, setDomain] = useState("");
-  const [company, setCompany] = useState("");
-  const [designation, setDesignation] = useState("");
-  const [yearsOfExperience, setYearsOfExperience] = useState("");
-  const [bio, setBio] = useState("");
-  
-  // Profile Picture
-  const [profileFile, setProfileFile] = useState(null);
-  const [profilePreview, setProfilePreview] = useState("");
-  const fileInputRef = useRef(null);
 
   const [loading, setLoading] = useState(false);
-  const [linkedinLoading, setLinkedinLoading] = useState(false);
   const [error, setError] = useState("");
-
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setProfileFile(file);
-      setProfilePreview(URL.createObjectURL(file));
-    }
-  };
-
-  const addSkill = () => {
-    const next = skillInput.split(",").map(s => s.trim()).filter(Boolean);
-    if (next.length === 0) return;
-    setSkills(prev => Array.from(new Set([...prev, ...next])));
-    setSkillInput("");
-  };
-
-  const removeSkill = (skill) => {
-    setSkills(prev => prev.filter(s => s !== skill));
-  };
 
   const handleRegister = async (e) => {
     e.preventDefault();
@@ -74,28 +35,14 @@ function Register() {
     setLoading(true);
 
     try {
-      const finalSkills = [...skills];
-      if (skillInput.trim()) {
-        const next = skillInput.split(",").map(s => s.trim()).filter(Boolean);
-        next.forEach(s => { if (!finalSkills.includes(s)) finalSkills.push(s); });
-      }
-
       const userData = {
         role: role.toUpperCase(),
         name,
         email,
         phone,
         password,
-        ...(role.toUpperCase() === "MENTOR" && { 
-          skills: finalSkills,
-          domain,
-          company,
-          designation,
-          yearsOfExperience: yearsOfExperience ? Number(yearsOfExperience) : 0,
-          bio
-        }),
         ...(role.toUpperCase() === "STUDENT" && { 
-          studentSkills: finalSkills,
+          studentSkills: skillInput.split(",").map((s) => s.trim()).filter(Boolean),
           studentDomain: domain
         })
       };
@@ -106,24 +53,8 @@ function Register() {
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(data.user));
 
-      // Handle Profile Picture Upload if it's a mentor and file is selected
-      if (role.toUpperCase() === "MENTOR" && profileFile) {
-        const formData = new FormData();
-        formData.append("profilePicture", profileFile);
-        try {
-          await API.post("/mentor/profile-picture", formData, {
-            headers: {
-              "Content-Type": "multipart/form-data",
-              Authorization: `Bearer ${token}`
-            }
-          });
-        } catch (uploadErr) {
-          console.error("Profile picture upload failed:", uploadErr);
-        }
-      }
-
       if (role.toUpperCase() === "MENTOR") {
-        navigate("/mentor");
+        navigate("/mentor/profile");
       } else if (role.toUpperCase() === "STUDENT") {
         navigate("/student");
       } else {
@@ -135,11 +66,6 @@ function Register() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleLinkedinSignup = () => {
-    setLinkedinLoading(true);
-    window.location.href = `http://localhost:5000/api/auth/linkedin?role=${role.toUpperCase()}`;
   };
 
   const roles = [
@@ -199,33 +125,12 @@ function Register() {
             </div>
           )}
 
-          {/* Profile Picture (Mentors Only) */}
           {role === "MENTOR" && (
-            <div className="flex flex-col items-center gap-4 py-4 bg-slate-50 rounded-[2rem] border border-slate-100">
-              <div className="relative group">
-                {profilePreview ? (
-                  <img
-                    src={profilePreview}
-                    alt="Preview"
-                    className="w-32 h-32 rounded-[2.5rem] object-cover border-4 border-white shadow-xl"
-                  />
-                ) : (
-                  <div className="w-32 h-32 rounded-[2.5rem] bg-slate-200 flex items-center justify-center text-slate-400 border-4 border-white shadow-md">
-                    <User size={48} />
-                  </div>
-                )}
-                <label className="absolute -bottom-2 -right-2 p-3 bg-blue-600 text-white rounded-2xl cursor-pointer hover:bg-blue-700 transition-all shadow-lg hover:scale-110">
-                  <Camera size={20} />
-                  <input
-                    type="file"
-                    className="hidden"
-                    accept="image/*"
-                    onChange={handleFileChange}
-                    ref={fileInputRef}
-                  />
-                </label>
-              </div>
-              <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Upload Profile Photo</p>
+            <div className="p-5 rounded-[2rem] bg-blue-50 border border-blue-100 text-blue-900">
+              <h3 className="text-sm font-black uppercase tracking-widest">Profile setup comes next</h3>
+              <p className="mt-2 text-sm font-medium text-blue-800">
+                Create your account first, then complete the same mentor profile page used for editing and approval submission.
+              </p>
             </div>
           )}
 
@@ -292,105 +197,6 @@ function Register() {
               </div>
             </div>
 
-            {role === "MENTOR" && (
-              <>
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-slate-700 uppercase tracking-widest ml-1">Current Company</label>
-                  <div className="relative group">
-                    <Briefcase className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                    <input
-                      type="text"
-                      placeholder="e.g. Google"
-                      className="w-full pl-12 pr-4 py-3.5 rounded-2xl border border-slate-200 bg-slate-50/30 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-medium"
-                      value={company}
-                      onChange={(e) => setCompany(e.target.value)}
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-slate-700 uppercase tracking-widest ml-1">Designation</label>
-                  <div className="relative group">
-                    <Award className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                    <input
-                      type="text"
-                      placeholder="e.g. Senior Engineer"
-                      className="w-full pl-12 pr-4 py-3.5 rounded-2xl border border-slate-200 bg-slate-50/30 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-medium"
-                      value={designation}
-                      onChange={(e) => setDesignation(e.target.value)}
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-slate-700 uppercase tracking-widest ml-1">Years of Experience</label>
-                  <input
-                    type="number"
-                    placeholder="e.g. 5"
-                    className="w-full px-5 py-3.5 rounded-2xl border border-slate-200 bg-slate-50/30 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-medium"
-                    value={yearsOfExperience}
-                    onChange={(e) => setYearsOfExperience(e.target.value)}
-                    required
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-slate-700 uppercase tracking-widest ml-1">Expertise Domain</label>
-                  <div className="relative group">
-                    <Globe className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                    <input
-                      type="text"
-                      placeholder="e.g. Web Development"
-                      className="w-full pl-12 pr-4 py-3.5 rounded-2xl border border-slate-200 bg-slate-50/30 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-medium"
-                      value={domain}
-                      onChange={(e) => setDomain(e.target.value)}
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="md:col-span-2 space-y-2">
-                  <label className="text-xs font-bold text-slate-700 uppercase tracking-widest ml-1">Skills & Expertise</label>
-                  <div className="flex gap-2">
-                    <div className="relative flex-1">
-                      <Award className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                      <input
-                        type="text"
-                        placeholder="Add skills (e.g. React, Python)"
-                        className="w-full pl-12 pr-4 py-3.5 rounded-2xl border border-slate-200 bg-slate-50/30 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-medium"
-                        value={skillInput}
-                        onChange={(e) => setSkillInput(e.target.value)}
-                        onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addSkill())}
-                      />
-                    </div>
-                    <button type="button" onClick={addSkill} className="p-3 bg-slate-900 text-white rounded-2xl hover:bg-slate-800 transition-all"><Plus size={20} /></button>
-                  </div>
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {skills.map(skill => (
-                      <span key={skill} className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 rounded-xl text-xs font-bold border border-blue-100">
-                        {skill}
-                        <button type="button" onClick={() => removeSkill(skill)}><Trash2 size={12} /></button>
-                      </span>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="md:col-span-2 space-y-2">
-                  <label className="text-xs font-bold text-slate-700 uppercase tracking-widest ml-1">Short Bio</label>
-                  <textarea
-                    rows={3}
-                    placeholder="Tell us about yourself..."
-                    className="w-full px-5 py-4 rounded-2xl border border-slate-200 bg-slate-50/30 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-medium resize-none"
-                    value={bio}
-                    onChange={(e) => setBio(e.target.value)}
-                    required
-                  />
-                </div>
-              </>
-            )}
-
             {role === "STUDENT" && (
               <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-slate-50 rounded-[2rem] border border-slate-100">
                 <div className="space-y-2">
@@ -434,31 +240,6 @@ function Register() {
               )}
             </button>
 
-            {role === "MENTOR" && (
-              <div className="space-y-4">
-                <div className="flex items-center gap-4">
-                  <div className="h-px bg-slate-200 flex-1" />
-                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Social Signup</span>
-                  <div className="h-px bg-slate-200 flex-1" />
-                </div>
-
-                <button
-                  type="button"
-                  onClick={handleLinkedinSignup}
-                  disabled={linkedinLoading}
-                  className="w-full bg-[#0077B5] text-white py-4 rounded-2xl font-bold hover:bg-[#006399] transition-all flex items-center justify-center gap-3 shadow-lg shadow-blue-500/10 active:scale-[0.99] disabled:opacity-60"
-                >
-                  {linkedinLoading ? (
-                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  ) : (
-                    <>
-                      <Linkedin size={20} fill="white" />
-                      Sign up with LinkedIn
-                    </>
-                  )}
-                </button>
-              </div>
-            )}
           </div>
 
           <p className="text-center text-sm font-medium text-slate-600">
