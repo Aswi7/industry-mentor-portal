@@ -22,11 +22,11 @@ export default function MentorMessages() {
   }
 
   return (
-    <div className="flex h-[calc(100vh-120px)] bg-white rounded-xl shadow-sm border overflow-hidden">
+    <div className="flex h-[calc(100vh-120px)] bg-white dark:bg-dark-card rounded-xl shadow-sm border border-gray-100 dark:border-dark-border overflow-hidden">
 
       {/* LEFT PANEL - STUDENT LIST */}
-      <div className="w-1/3 border-r bg-gray-50">
-        <div className="p-4 font-semibold text-gray-800 border-b">
+      <div className="w-1/3 border-r border-gray-100 dark:border-dark-border bg-gray-50 dark:bg-dark-bg/50">
+        <div className="p-4 font-semibold text-gray-800 dark:text-white border-b border-gray-100 dark:border-dark-border">
           Messages
         </div>
 
@@ -34,26 +34,26 @@ export default function MentorMessages() {
           <div
             key={index}
             onClick={() => setSelectedStudent(student.name)}
-            className={`p-4 cursor-pointer hover:bg-gray-100 ${
-              selectedStudent === student.name ? "bg-gray-200" : ""
+            className={`p-4 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors ${
+              selectedStudent === student.name ? "bg-gray-200 dark:bg-gray-800 border-r-4 border-blue-500" : ""
             }`}
           >
-            <h3 className="font-medium text-gray-800">{student.name}</h3>
-            <p className="text-sm text-gray-500">{student.email}</p>
+            <h3 className="font-medium text-gray-800 dark:text-white">{student.name}</h3>
+            <p className="text-sm text-gray-500 dark:text-dark-subtext">{student.email}</p>
           </div>
         ))}
       </div>
 
       {/* RIGHT PANEL - CHAT */}
-      <div className="flex flex-col flex-1">
+      <div className="flex flex-col flex-1 bg-white dark:bg-dark-card">
 
         {/* Chat Header */}
-        <div className="p-4 border-b font-semibold text-gray-800">
+        <div className="p-4 border-b border-gray-100 dark:border-dark-border font-semibold text-gray-800 dark:text-white">
           {selectedStudent}
         </div>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-50">
+        <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-50 dark:bg-dark-bg/30">
 
           {messages.map((msg, index) => (
             <div
@@ -63,10 +63,10 @@ export default function MentorMessages() {
               }`}
             >
               <div
-                className={`px-4 py-2 rounded-lg max-w-xs text-sm ${
+                className={`px-4 py-2 rounded-lg max-w-xs text-sm shadow-sm ${
                   msg.sender === "mentor"
                     ? "bg-blue-600 text-white"
-                    : "bg-white border text-gray-800"
+                    : "bg-white dark:bg-dark-bg border border-gray-100 dark:border-dark-border text-gray-800 dark:text-dark-text"
                 }`}
               >
                 {msg.text}
@@ -77,18 +77,18 @@ export default function MentorMessages() {
         </div>
 
         {/* Input Area */}
-        <div className="p-4 border-t flex items-center gap-3 bg-white">
+        <div className="p-4 border-t border-gray-100 dark:border-dark-border flex items-center gap-3 bg-white dark:bg-dark-card">
           <input
             type="text"
             placeholder="Type your message..."
-            className="flex-1 border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="flex-1 border border-gray-200 dark:border-dark-border rounded-lg px-4 py-2 bg-white dark:bg-dark-bg text-gray-800 dark:text-dark-text focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSend()}
           />
           <button
             onClick={handleSend}
-            className="bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700 transition"
+            className="bg-blue-600 text-white p-2.5 rounded-lg hover:bg-blue-700 transition shadow-lg shadow-blue-600/20 active:scale-95"
           >
             <Send size={18} />
           </button>

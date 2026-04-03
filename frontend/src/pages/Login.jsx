@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Mail, Lock, LogIn, GraduationCap, ShieldCheck, User } from "lucide-react";
+import { Mail, Lock, LogIn, GraduationCap, ShieldCheck, User, AlertCircle } from "lucide-react";
 import API from "../services/api";
+import ThemeToggle from "./components/ThemeToggle";
 
 function Login() {
   const navigate = useNavigate();
@@ -54,41 +55,45 @@ function Login() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center p-4 overflow-hidden">
-      <div className="bg-white w-full max-w-[380px] p-6 rounded-[1.75rem] shadow-xl border border-slate-100 animate-in fade-in zoom-in duration-500">
+    <div className="min-h-screen bg-gray-50 dark:bg-dark-bg flex flex-col items-center justify-center p-6 transition-colors duration-300">
+      <div className="absolute top-8 right-8">
+        <ThemeToggle />
+      </div>
+
+      <div className="w-full max-w-[420px] card p-8 shadow-2xl animate-in fade-in zoom-in duration-500">
         
         {/* Logo/Icon */}
-        <div className="flex justify-center mb-4">
-          <div className="w-12 h-12 bg-blue-600 text-white rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
-            <GraduationCap size={24} />
+        <div className="flex justify-center mb-6">
+          <div className="w-16 h-16 bg-primary-900 dark:bg-primary-600 text-white rounded-2xl flex items-center justify-center shadow-xl shadow-primary-500/20 rotate-3">
+            <GraduationCap size={32} />
           </div>
         </div>
 
-        <div className="text-center mb-5">
-          <h2 className="text-xl font-black text-slate-900 tracking-tight mb-0.5">
+        <div className="text-center mb-8">
+          <h2 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight mb-1">
             Welcome Back
           </h2>
-          <p className="text-[13px] text-slate-600 font-medium">
+          <p className="text-sm text-gray-500 dark:text-dark-subtext font-medium">
             Sign in to continue your journey
           </p>
         </div>
 
-        <form onSubmit={handleLogin} className="space-y-3">
+        <form onSubmit={handleLogin} className="space-y-5">
           {/* Role Selection */}
-          <div className="space-y-1.5">
-            <label className="text-[9px] font-bold text-slate-700 uppercase tracking-widest ml-1">
+          <div className="space-y-2">
+            <label className="text-[10px] font-black text-gray-400 dark:text-dark-subtext uppercase tracking-widest ml-1">
               Login as
             </label>
-            <div className="flex gap-1.5 bg-slate-50 p-1 rounded-lg border border-slate-100">
+            <div className="flex gap-2 bg-gray-50 dark:bg-gray-900/50 p-1.5 rounded-xl border border-gray-100 dark:border-dark-border">
               {roles.map((r) => (
                 <button
                   key={r.id}
                   type="button"
                   onClick={() => setRole(r.id)}
-                  className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-md font-bold text-[11px] transition-all duration-200 ${
+                  className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg font-black text-[11px] uppercase tracking-widest transition-all duration-300 ${
                     role === r.id
-                      ? "bg-white text-blue-600 shadow-sm ring-1 ring-slate-200"
-                      : "text-slate-500 hover:text-slate-700 hover:bg-slate-100/50"
+                      ? "bg-white dark:bg-dark-card text-primary-600 dark:text-primary-400 shadow-md ring-1 ring-gray-200 dark:ring-dark-border"
+                      : "text-gray-400 hover:text-gray-600 dark:hover:text-dark-text"
                   }`}
                 >
                   {r.icon}
@@ -99,41 +104,37 @@ function Login() {
           </div>
 
           {/* Email */}
-          <div className="space-y-1">
-            <label htmlFor="email" className="text-[9px] font-bold text-slate-700 uppercase tracking-widest ml-1">
+          <div className="space-y-2">
+            <label htmlFor="email" className="text-[10px] font-black text-gray-400 dark:text-dark-subtext uppercase tracking-widest ml-1">
               Email Address
             </label>
             <div className="relative group">
-              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors">
-                <Mail size={14} />
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-primary-500 transition-colors">
+                <Mail size={18} />
               </div>
               <input
                 id="email"
                 name="email"
-                type="text"
-                inputMode="email"
+                type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 placeholder="name@example.com"
-                className="w-full pl-9 pr-3 py-2 rounded-lg border border-slate-200 bg-slate-50/30 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-medium text-[13px] text-slate-700"
+                className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-100 dark:border-dark-border bg-gray-50/50 dark:bg-gray-900/20 focus:bg-white dark:focus:bg-dark-card focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none transition-all font-medium text-sm dark:text-dark-text"
               />
             </div>
           </div>
 
           {/* Password */}
-          <div className="space-y-1">
+          <div className="space-y-2">
             <div className="flex justify-between items-center ml-1">
-              <label htmlFor="password" title="Password" className="text-[9px] font-bold text-slate-700 uppercase tracking-widest">
+              <label htmlFor="password" title="Password" className="text-[10px] font-black text-gray-400 dark:text-dark-subtext uppercase tracking-widest">
                 Password
               </label>
-              <a href="#" className="text-[9px] font-bold text-blue-600 hover:underline">
-                Forgot?
-              </a>
             </div>
             <div className="relative group">
-              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors">
-                <Lock size={14} />
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-primary-500 transition-colors">
+                <Lock size={18} />
               </div>
               <input
                 id="password"
@@ -143,14 +144,15 @@ function Login() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 placeholder="••••••••"
-                className="w-full pl-9 pr-3 py-2 rounded-lg border border-slate-200 bg-slate-50/30 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-medium text-[13px] text-slate-700"
+                className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-100 dark:border-dark-border bg-gray-50/50 dark:bg-gray-900/20 focus:bg-white dark:focus:bg-dark-card focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none transition-all font-medium text-sm dark:text-dark-text"
               />
             </div>
           </div>
 
           {/* Error Message */}
           {error && (
-            <div className="p-2 rounded-lg bg-red-50 border border-red-100 text-red-600 text-[9px] font-bold text-center">
+            <div className="p-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800 text-red-600 dark:text-red-400 text-xs font-bold flex items-center gap-2 animate-shake">
+              <AlertCircle size={16} />
               {error}
             </div>
           )}
@@ -159,38 +161,38 @@ function Login() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 text-white py-2.5 rounded-lg font-bold hover:bg-blue-700 transition-all shadow-md shadow-blue-500/20 active:scale-[0.98] disabled:opacity-70 flex items-center justify-center gap-2 text-[13px]"
+            className="w-full btn-primary py-3 flex items-center justify-center gap-2 group"
           >
             {loading ? (
-              <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
             ) : (
               <>
-                <LogIn size={14} />
-                Sign In
+                <LogIn size={18} className="group-hover:translate-x-1 transition-transform" />
+                <span className="uppercase tracking-widest text-xs font-black">Sign In</span>
               </>
             )}
           </button>
 
-          <p className="text-center mt-4 text-[11px] font-medium text-slate-600">
+          <p className="text-center mt-6 text-sm font-medium text-gray-500 dark:text-dark-subtext">
             Don't have an account?{" "}
-            <a href="/register" className="text-blue-600 font-bold hover:underline">
+            <a href="/register" className="text-primary-600 dark:text-primary-400 font-bold hover:underline">
               Create one now
             </a>
           </p>
 
-          <div className="flex items-center gap-2.5 my-2">
-            <div className="h-px bg-slate-100 flex-1" />
-            <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Professional?</span>
-            <div className="h-px bg-slate-100 flex-1" />
+          <div className="flex items-center gap-4 my-6">
+            <div className="h-px bg-gray-100 dark:bg-dark-border flex-1" />
+            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Industry Professional?</span>
+            <div className="h-px bg-gray-100 dark:bg-dark-border flex-1" />
           </div>
 
           <button
             type="button"
             onClick={() => navigate("/register?role=MENTOR")}
-            className="w-full py-2 rounded-lg border border-slate-100 text-slate-600 font-bold hover:bg-slate-50 hover:border-slate-200 transition-all flex items-center justify-center gap-2 text-[12px]"
+            className="w-full btn-secondary py-3 flex items-center justify-center gap-2 text-xs font-black uppercase tracking-widest"
           >
-            <User size={14} className="text-blue-600" />
-            Register as Mentor
+            <User size={16} className="text-primary-600 dark:text-primary-400" />
+            Become a Mentor
           </button>
         </form>
       </div>

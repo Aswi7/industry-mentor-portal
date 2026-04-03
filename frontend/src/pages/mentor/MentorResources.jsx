@@ -21,6 +21,7 @@ export default function MentorResources() {
   const [desc, setDesc] = useState("")
   const [type, setType] = useState("Link")
   const [file, setFile] = useState(null)
+  const [link, setLink] = useState("")
   const [loading, setLoading] = useState(false)
   const [showUpload, setShowUpload] = useState(false)
 
@@ -64,7 +65,13 @@ export default function MentorResources() {
       formData.append("description", desc)
       formData.append("type", type)
 
-      if (file) formData.append("file", file)
+      if (type === "Link" || type === "Video") {
+        if (link) formData.append("link", link)
+      }
+      
+      if (type === "Document" || type === "Video") {
+        if (file) formData.append("file", file)
+      }
 
       await axios.post(
         "http://localhost:5000/api/resources",
@@ -83,6 +90,7 @@ export default function MentorResources() {
       setTitle("")
       setDesc("")
       setFile(null)
+      setLink("")
       setShowUpload(false)
 
       /* Refresh list */
@@ -128,8 +136,8 @@ export default function MentorResources() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight">Library Resources</h1>
-          <p className="text-gray-700 mt-2 text-lg">
+          <h1 className="text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight">Library Resources</h1>
+          <p className="text-gray-700 dark:text-dark-subtext mt-2 text-lg">
             Manage and share curated learning materials with your mentees
           </p>
         </div>
@@ -137,7 +145,7 @@ export default function MentorResources() {
           onClick={() => setShowUpload(!showUpload)}
           className={`flex items-center justify-center gap-2 px-6 py-3 rounded-2xl font-bold transition-all shadow-lg active:scale-95 ${
             showUpload 
-              ? "bg-gray-100 text-gray-700 hover:bg-gray-200" 
+              ? "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-dark-text hover:bg-gray-200 dark:hover:bg-gray-700" 
               : "bg-blue-600 text-white hover:bg-blue-700 shadow-blue-500/20"
           }`}
         >
@@ -148,20 +156,20 @@ export default function MentorResources() {
 
       {/* Upload Form (Animated) */}
       {showUpload && (
-        <div className="bg-white p-8 rounded-[2rem] shadow-xl border border-blue-50 animate-in slide-in-from-top-4 duration-500">
+        <div className="bg-white dark:bg-dark-card p-8 rounded-[2rem] shadow-xl border border-blue-50 dark:border-dark-border animate-in slide-in-from-top-4 duration-500">
           <div className="flex items-center gap-3 mb-6">
-            <div className="p-3 bg-blue-50 text-blue-600 rounded-2xl">
+            <div className="p-3 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-2xl">
               <Upload size={24} />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900">Upload New Material</h2>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Upload New Material</h2>
           </div>
 
           <form onSubmit={handleUpload} className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <label className="text-xs font-bold text-gray-700 uppercase tracking-wider ml-1">Resource Title</label>
+              <label className="text-xs font-bold text-gray-700 dark:text-dark-text uppercase tracking-wider ml-1">Resource Title</label>
               <input
                 placeholder="e.g. System Design Basics"
-                className="w-full border border-gray-200 p-4 rounded-2xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all font-medium"
+                className="w-full border border-gray-200 dark:border-dark-border bg-white dark:bg-dark-bg p-4 rounded-2xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all font-medium dark:text-dark-text"
                 value={title}
                 onChange={e => setTitle(e.target.value)}
                 required
@@ -169,11 +177,15 @@ export default function MentorResources() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-bold text-gray-700 uppercase tracking-wider ml-1">Resource Type</label>
+              <label className="text-xs font-bold text-gray-700 dark:text-dark-text uppercase tracking-wider ml-1">Resource Type</label>
               <select
-                className="w-full border border-gray-200 p-4 rounded-2xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all font-medium bg-white"
+                className="w-full border border-gray-200 dark:border-dark-border p-4 rounded-2xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all font-medium bg-white dark:bg-dark-bg dark:text-dark-text"
                 value={type}
-                onChange={e => setType(e.target.value)}
+                onChange={e => {
+                  setType(e.target.value);
+                  setFile(null);
+                  setLink("");
+                }}
               >
                 <option value="Link">Web Link / Article</option>
                 <option value="Document">PDF / Document</option>
@@ -182,10 +194,10 @@ export default function MentorResources() {
             </div>
 
             <div className="md:col-span-2 space-y-2">
-              <label className="text-xs font-bold text-gray-700 uppercase tracking-wider ml-1">Description</label>
+              <label className="text-xs font-bold text-gray-700 dark:text-dark-text uppercase tracking-wider ml-1">Description</label>
               <textarea
                 placeholder="Provide a brief summary of what this resource covers..."
-                className="w-full border border-gray-200 p-4 rounded-2xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all font-medium resize-none"
+                className="w-full border border-gray-200 dark:border-dark-border bg-white dark:bg-dark-bg p-4 rounded-2xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all font-medium resize-none dark:text-dark-text"
                 rows={3}
                 value={desc}
                 onChange={e => setDesc(e.target.value)}
@@ -193,26 +205,53 @@ export default function MentorResources() {
               />
             </div>
 
-            <div className="md:col-span-2 p-6 border-2 border-dashed border-gray-100 rounded-[2rem] bg-gray-50/50">
-              <div className="flex flex-col items-center gap-2">
-                <div className="p-3 bg-white rounded-2xl shadow-sm text-gray-400">
-                  <FileText size={32} />
+            {(type === "Link" || type === "Video") && (
+              <div className="md:col-span-2 space-y-2">
+                <label className="text-xs font-bold text-gray-700 dark:text-dark-text uppercase tracking-wider ml-1">
+                  {type === "Video" ? "Video Link (YouTube/Vimeo)" : "Resource URL"}
+                </label>
+                <div className="relative">
+                  <LinkIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                  <input
+                    type="url"
+                    placeholder="https://example.com/..."
+                    className="w-full pl-12 pr-4 py-4 rounded-2xl border border-gray-200 dark:border-dark-border bg-white dark:bg-dark-bg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all font-medium dark:text-dark-text"
+                    value={link}
+                    onChange={e => setLink(e.target.value)}
+                    required={!file}
+                  />
                 </div>
-                <p className="text-sm font-bold text-gray-700">Attach file or provide link below</p>
-                <p className="text-xs text-gray-600 mb-4 text-center">Supported formats: PDF, DOCX, PNG, JPG (Max 10MB)</p>
-                <input
-                  type="file"
-                  onChange={e => setFile(e.target.files[0])}
-                  className="block w-full text-sm text-gray-600 file:mr-4 file:py-2.5 file:px-6 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-700 cursor-pointer"
-                />
+                {type === "Video" && <p className="text-[10px] text-gray-500 dark:text-dark-subtext italic ml-1">Or upload a video file below</p>}
               </div>
-            </div>
+            )}
+
+            {(type === "Document" || type === "Video") && (
+              <div className="md:col-span-2 p-6 border-2 border-dashed border-gray-100 dark:border-dark-border rounded-[2rem] bg-gray-50/50 dark:bg-dark-bg/50">
+                <div className="flex flex-col items-center gap-2">
+                  <div className="p-3 bg-white dark:bg-dark-card rounded-2xl shadow-sm text-gray-400">
+                    {type === "Video" ? <Video size={32} /> : <FileText size={32} />}
+                  </div>
+                  <p className="text-sm font-bold text-gray-700 dark:text-dark-text">
+                    {type === "Video" ? "Upload video file" : "Attach document file"}
+                  </p>
+                  <p className="text-xs text-gray-600 dark:text-dark-subtext mb-4 text-center">
+                    {type === "Video" ? "Supported formats: MP4, WebM (Max 50MB)" : "Supported formats: PDF, DOCX, PNG, JPG (Max 10MB)"}
+                  </p>
+                  <input
+                    type="file"
+                    onChange={e => setFile(e.target.files[0])}
+                    required={type === "Document" && !link}
+                    className="block w-full text-sm text-gray-600 dark:text-dark-subtext file:mr-4 file:py-2.5 file:px-6 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-blue-600 file:text-white hover:file:bg-blue-700 cursor-pointer"
+                  />
+                </div>
+              </div>
+            )}
 
             <div className="md:col-span-2 flex justify-end gap-3 mt-2">
               <button
                 type="button"
                 onClick={() => setShowUpload(false)}
-                className="px-8 py-4 rounded-2xl font-bold text-gray-700 hover:bg-gray-100 transition-all"
+                className="px-8 py-4 rounded-2xl font-bold text-gray-700 dark:text-dark-subtext hover:bg-gray-100 dark:hover:bg-gray-800 transition-all"
               >
                 Discard
               </button>
@@ -238,9 +277,9 @@ export default function MentorResources() {
       {/* Resource Grid */}
       <div>
         <div className="flex items-center justify-between mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
             Your Uploaded Content
-            <span className="bg-gray-100 text-gray-700 text-xs px-3 py-1 rounded-full">{resources.length}</span>
+            <span className="bg-gray-100 dark:bg-dark-card text-gray-700 dark:text-dark-text text-xs px-3 py-1 rounded-full">{resources.length}</span>
           </h2>
           <div className="flex gap-2">
              {/* Filter chips could go here */}
@@ -258,17 +297,17 @@ export default function MentorResources() {
             ))}
           </div>
         ) : (
-          <div className="bg-white rounded-[3rem] border-2 border-dashed border-gray-100 py-24 flex flex-col items-center justify-center text-center">
-            <div className="w-20 h-20 bg-gray-50 rounded-[2rem] flex items-center justify-center text-gray-300 mb-6">
+          <div className="bg-white dark:bg-dark-card rounded-[3rem] border-2 border-dashed border-gray-100 dark:border-dark-border py-24 flex flex-col items-center justify-center text-center">
+            <div className="w-20 h-20 bg-gray-50 dark:bg-dark-bg rounded-[2rem] flex items-center justify-center text-gray-300 dark:text-gray-600 mb-6">
               <BookOpen size={40} />
             </div>
-            <h3 className="text-xl font-bold text-gray-900">No resources yet</h3>
-            <p className="text-gray-600 mt-2 max-w-xs mx-auto">
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white">No resources yet</h3>
+            <p className="text-gray-600 dark:text-dark-subtext mt-2 max-w-xs mx-auto">
               Start building your library by uploading files or sharing useful links with your mentees.
             </p>
             <button 
               onClick={() => setShowUpload(true)}
-              className="mt-8 text-blue-600 font-bold flex items-center gap-2 hover:underline"
+              className="mt-8 text-blue-600 dark:text-blue-400 font-bold flex items-center gap-2 hover:underline"
             >
               <Plus size={18} />
               Upload your first resource
@@ -285,21 +324,21 @@ export default function MentorResources() {
 
 function StatWidget({ icon, title, subtitle, color }) {
   const colors = {
-    blue: "bg-blue-50 text-blue-600",
-    amber: "bg-amber-50 text-amber-600",
-    red: "bg-red-50 text-red-600",
-    emerald: "bg-emerald-50 text-emerald-600"
+    blue: "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400",
+    amber: "bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400",
+    red: "bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400",
+    emerald: "bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400"
   }
 
   return (
-    <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-50 flex items-center gap-5 hover:shadow-md transition-all duration-300 group">
+    <div className="bg-white dark:bg-dark-card p-6 rounded-[2rem] shadow-sm border border-gray-50 dark:border-dark-border flex items-center gap-5 hover:shadow-md transition-all duration-300 group">
       <div className={`p-4 rounded-2xl transition-transform group-hover:scale-110 ${colors[color]}`}>
         {icon}
       </div>
 
       <div>
-        <p className="text-2xl font-black text-gray-900">{title}</p>
-        <p className="text-xs font-bold text-gray-600 uppercase tracking-widest mt-0.5">{subtitle}</p>
+        <p className="text-2xl font-black text-gray-900 dark:text-white">{title}</p>
+        <p className="text-xs font-bold text-gray-600 dark:text-dark-subtext uppercase tracking-widest mt-0.5">{subtitle}</p>
       </div>
     </div>
   )
@@ -316,38 +355,38 @@ function ResourceCard({ resource, onDelete }) {
   }
 
   const typeStyles = {
-    Link: "bg-emerald-50 text-emerald-700 border-emerald-100",
-    Document: "bg-amber-50 text-amber-700 border-amber-100",
-    Video: "bg-red-50 text-red-700 border-red-100"
+    Link: "bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border-emerald-100 dark:border-emerald-900/50",
+    Document: "bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 border-amber-100 dark:border-amber-900/50",
+    Video: "bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-100 dark:border-red-900/50"
   }
 
   return (
     <div
-      className="bg-white rounded-[2.5rem] shadow-sm border border-gray-100 p-8 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group flex flex-col h-full"
+      className="bg-white dark:bg-dark-card rounded-[2.5rem] shadow-sm border border-gray-100 dark:border-dark-border p-8 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group flex flex-col h-full"
     >
       <div className="flex justify-between items-start mb-6">
-        <div className={`p-3 rounded-2xl ${typeStyles[resource.type] || "bg-gray-50 text-gray-600"}`}>
+        <div className={`p-3 rounded-2xl ${typeStyles[resource.type] || "bg-gray-50 dark:bg-dark-bg text-gray-600 dark:text-dark-subtext"}`}>
           {resource.type === "Link" && <LinkIcon size={20} />}
           {resource.type === "Document" && <FileText size={20} />}
           {resource.type === "Video" && <Video size={20} />}
         </div>
-        <span className={`text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full border ${typeStyles[resource.type] || "bg-gray-50"}`}>
+        <span className={`text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full border ${typeStyles[resource.type] || "bg-gray-50 dark:bg-dark-bg"}`}>
           {resource.type}
         </span>
       </div>
 
       <div className="flex-1">
-        <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors line-clamp-1">
+        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-1">
           {resource.title}
         </h3>
-        <p className="text-sm text-gray-700 line-clamp-2 italic mb-6 leading-relaxed">
+        <p className="text-sm text-gray-700 dark:text-dark-text line-clamp-2 italic mb-6 leading-relaxed">
           "{resource.description}"
         </p>
       </div>
 
       <div className="space-y-4">
-        <div className="flex flex-col gap-2 pt-4 border-t border-gray-50">
-          <div className="flex items-center justify-between text-[11px] font-bold text-gray-600">
+        <div className="flex flex-col gap-2 pt-4 border-t border-gray-50 dark:border-dark-border">
+          <div className="flex items-center justify-between text-[11px] font-bold text-gray-600 dark:text-dark-subtext">
             <div className="flex items-center gap-1.5">
               <User size={12} className="text-gray-400" />
               {resource?.mentor?.name || "You"}
@@ -362,7 +401,7 @@ function ResourceCard({ resource, onDelete }) {
         <div className="flex gap-2">
           <button
             onClick={openResource}
-            className="flex-1 bg-gray-50 text-gray-900 py-3 rounded-2xl text-xs font-bold hover:bg-blue-600 hover:text-white transition-all flex items-center justify-center gap-2 border border-gray-100"
+            className="flex-1 bg-gray-50 dark:bg-dark-bg text-gray-900 dark:text-dark-text py-3 rounded-2xl text-xs font-bold hover:bg-blue-600 hover:text-white dark:hover:bg-blue-500 transition-all flex items-center justify-center gap-2 border border-gray-100 dark:border-dark-border"
           >
             <ExternalLink size={14} />
             View
@@ -373,7 +412,7 @@ function ResourceCard({ resource, onDelete }) {
               e.stopPropagation();
               onDelete(resource._id);
             }}
-            className="p-3 bg-red-50 text-red-600 rounded-2xl hover:bg-red-600 hover:text-white transition-all border border-red-100"
+            className="p-3 bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-2xl hover:bg-red-600 hover:text-white dark:hover:bg-red-500 transition-all border border-red-100 dark:border-red-900/50"
             title="Delete Resource"
           >
             <Trash2 size={16} />
