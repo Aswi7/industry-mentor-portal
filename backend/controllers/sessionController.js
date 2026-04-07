@@ -358,12 +358,15 @@ const acceptSession = async (req, res) => {
     // Send notification to student
     try {
       const mentor = await User.findById(req.user.id);
+      const dateStr = session.startsAt ? new Date(session.startsAt).toLocaleDateString() : "TBD";
+      const timeStr = session.startsAt ? new Date(session.startsAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "TBD";
+      
       await Notification.create({
         recipient: session.student,
         sender: req.user.id,
         type: "SESSION_ACCEPTED",
         title: "Session Request Accepted",
-        message: `Your session request for "${session.topic}" has been accepted by ${mentor.name}.`,
+        message: `Your session on "${session.topic}" has been Accepted by ${mentor.name} for ${dateStr} at ${timeStr}.`,
         relatedId: session._id,
         relatedModel: "Session"
       });
@@ -397,6 +400,22 @@ const rejectSession = async (req, res) => {
 
     session.status = "REJECTED";
     await session.save();
+
+    // Send notification to student
+    try {
+      const mentor = await User.findById(req.user.id);
+      await Notification.create({
+        recipient: session.student,
+        sender: req.user.id,
+        type: "SESSION_REJECTED",
+        title: "Session Request Rejected",
+        message: `Your session request for "${session.topic}" has been Rejected by ${mentor.name}.`,
+        relatedId: session._id,
+        relatedModel: "Session"
+      });
+    } catch (notifErr) {
+      console.warn("Failed to create notification:", notifErr.message);
+    }
 
     res.status(200).json({ message: "Session rejected", session });
 
