@@ -494,7 +494,8 @@ const getStudentSessions = async (req, res) => {
 
     const sessions = await Session.find({ student: req.user.id })
       .populate("mentor", "name email skills domain bio company designation yearsOfExperience profilePicture")
-      .populate("student", "name email");
+      .populate("student", "name email")
+      .sort({ createdAt: -1 });
 
     res.status(200).json({ sessions });
   } catch (err) {

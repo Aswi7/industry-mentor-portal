@@ -29,7 +29,9 @@ const registerUser = async (req, res) => {
       company,
       designation,
       yearsOfExperience,
-      bio
+      bio,
+      linkedinUrl,
+      xUrl
     } = req.body;
     
     console.log("Registering user:", { name, email, role });
@@ -61,7 +63,9 @@ const registerUser = async (req, res) => {
       company,
       designation,
       yearsOfExperience: (yearsOfExperience !== undefined && yearsOfExperience !== "") ? Number(yearsOfExperience) : undefined,
-      bio
+      bio,
+      linkedinUrl: linkedinUrl ? String(linkedinUrl).trim() : undefined,
+      xUrl: xUrl ? String(xUrl).trim() : undefined,
     };
 
     const user = await User.create(userData);

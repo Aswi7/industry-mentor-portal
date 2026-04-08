@@ -6,9 +6,9 @@ const {
   getStudentProfile,
   updateStudentProfile,
   getStudentStats,
-  getStudentSessions,
   getStudentMentors
 } = require("../controllers/studentController");
+const { getStudentSessions } = require("../controllers/sessionController");
 
 // GET mentors by skill or domain
 router.get("/mentors", protect, studentOnly, searchMentors);

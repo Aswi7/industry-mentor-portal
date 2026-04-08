@@ -87,7 +87,13 @@ const getStudentStats = async (req, res) => {
       status: { $in: ["ACCEPTED", "COMPLETED"] }
     }).select("mentor");
 
-    const mentorIds = [...new Set(eligibleSessions.map((s) => s.mentor.toString()))];
+    const mentorIds = [
+      ...new Set(
+        eligibleSessions
+          .map((s) => s?.mentor?.toString?.())
+          .filter(Boolean)
+      ),
+    ];
     const resourcesCount = mentorIds.length
       ? await Resource.countDocuments({ mentor: { $in: mentorIds } })
       : 0;
@@ -99,6 +105,7 @@ const getStudentStats = async (req, res) => {
     // Calculate sessions per skill
     const skillDetails = studentSkills.map(skill => {
       const count = completedSessions.filter(s => 
+        typeof s?.topic === "string" &&
         s.topic.toLowerCase().includes(skill.toLowerCase())
       ).length;
       return { skill, sessions: count };
@@ -146,6 +153,7 @@ const getStudentMentors = async (req, res) => {
     // Get unique mentors
     const mentorMap = new Map();
     sessions.forEach(session => {
+      if (!session.mentor?._id) return;
       mentorMap.set(session.mentor._id.toString(), session.mentor);
     });
 

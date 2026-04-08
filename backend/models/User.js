@@ -58,6 +58,14 @@ const userSchema = new mongoose.Schema({
     type: Number,
     min: 0,
   },
+  linkedinUrl: {
+    type: String,
+    trim: true,
+  },
+  xUrl: {
+    type: String,
+    trim: true,
+  },
   skills: {
     type: [String], // Array of skills for mentor search
   },

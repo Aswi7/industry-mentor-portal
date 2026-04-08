@@ -88,7 +88,18 @@ const updateMentorProfile = async (req, res) => {
     const mentor = await User.findById(req.user.id);
     if (!mentor) return res.status(404).json({ message: "Mentor not found" });
 
-    const { skills, domain, bio, profilePicture, phone, company, designation, yearsOfExperience } = req.body;
+    const {
+      skills,
+      domain,
+      bio,
+      profilePicture,
+      phone,
+      company,
+      designation,
+      yearsOfExperience,
+      linkedinUrl,
+      xUrl,
+    } = req.body;
 
     if (skills !== undefined) {
       if (!Array.isArray(skills)) {
@@ -102,6 +113,8 @@ const updateMentorProfile = async (req, res) => {
     if (phone !== undefined) mentor.phone = phone;
     if (company !== undefined) mentor.company = company;
     if (designation !== undefined) mentor.designation = designation;
+    if (linkedinUrl !== undefined) mentor.linkedinUrl = linkedinUrl ? String(linkedinUrl).trim() : "";
+    if (xUrl !== undefined) mentor.xUrl = xUrl ? String(xUrl).trim() : "";
     if (yearsOfExperience !== undefined) {
       const parsed =
         yearsOfExperience === "" || yearsOfExperience === null
