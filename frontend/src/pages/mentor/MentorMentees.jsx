@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import API from "../../services/api";
 import { Users, Mail, BookOpen, Clock, CheckCircle2, XCircle } from "lucide-react";
 
 export default function MentorMentees() {
@@ -15,8 +15,8 @@ export default function MentorMentees() {
       const headers = { Authorization: `Bearer ${token}` };
 
       const [menteesRes, requestsRes] = await Promise.all([
-        axios.get("http://localhost:5000/api/mentor/mentees", { headers }),
-        axios.get("http://localhost:5000/api/mentor/pending-requests", { headers })
+        API.get("/mentor/mentees", { headers }),
+        API.get("/mentor/pending-requests", { headers })
       ]);
 
       setMentees(menteesRes.data.mentees || []);
@@ -39,7 +39,7 @@ export default function MentorMentees() {
       const headers = { Authorization: `Bearer ${token}` };
       setActioningId(sessionId);
 
-      await axios.put(`http://localhost:5000/api/sessions/${action}/${sessionId}`, {}, { headers });
+      await API.put(`/sessions/${action}/${sessionId}`, {}, { headers });
       await fetchData();
       window.dispatchEvent(new Event("sessionChanged"));
     } catch (err) {

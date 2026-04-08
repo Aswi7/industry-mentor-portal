@@ -1,10 +1,8 @@
 import { Calendar, Clock, BookOpen, BarChart3, AlertCircle, PlayCircle, TrendingUp } from "lucide-react";
 import { useState, useEffect } from "react";
-import axios from "axios";
+import API from "../../services/api";
 
 const StudentOverview = () => {
-  const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
-  
   const [studentName, setStudentName] = useState("");
   const [stats, setStats] = useState({ upcoming: 0, completed: 0, resources: 0, skills: 0, skillDetails: [] });
   const [upcomingSessions, setUpcomingSessions] = useState([]);
@@ -19,15 +17,15 @@ const StudentOverview = () => {
         const headers = { Authorization: `Bearer ${token}` };
 
         const [profileRes, statsRes, sessionsRes] = await Promise.all([
-          axios.get(`${API_BASE}/api/student/profile`, { headers }),
-          axios.get(`${API_BASE}/api/student/stats`, { headers }),
-          axios.get(`${API_BASE}/api/student/sessions`, { headers })
+          API.get("/student/profile", { headers }),
+          API.get("/student/stats", { headers }),
+          API.get("/student/sessions", { headers })
         ]);
 
         setStudentName(profileRes.data.student.name);
         setStats(statsRes.data.stats);
 
-        const upcoming = sessionsRes.data.sessions
+        const upcoming = (sessionsRes.data.sessions || [])
           .filter((s) => s.status === "REQUESTED" || s.status === "ACCEPTED")
           .slice(0, 3);
         setUpcomingSessions(upcoming);
@@ -41,7 +39,7 @@ const StudentOverview = () => {
     };
 
     fetchData();
-  }, [API_BASE]);
+  }, []);
 
   useEffect(() => {
     const timer = setInterval(() => setNowTs(Date.now()), 30000);

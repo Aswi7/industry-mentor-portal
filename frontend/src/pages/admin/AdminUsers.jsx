@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import axios from "axios";
+import API from "../../services/api";
 import { Search, Users, GraduationCap, Briefcase, UserX, AlertCircle } from "lucide-react";
 
 const getInitials = (name = "") =>
@@ -23,8 +23,6 @@ const getUserDetails = (user) => {
 };
 
 export default function AdminUsers() {
-  const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
-  
   const [users, setUsers] = useState([]);
   const [query, setQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState("ALL");
@@ -36,7 +34,7 @@ export default function AdminUsers() {
       try {
         const token = localStorage.getItem("token");
         const headers = { Authorization: `Bearer ${token}` };
-        const res = await axios.get(`${API_BASE}/api/admin/users`, { headers });
+        const res = await API.get("/admin/users", { headers });
         setUsers(res.data.users || []);
       } catch (err) {
         console.error(err);
@@ -47,7 +45,7 @@ export default function AdminUsers() {
     };
 
     fetchUsers();
-  }, [API_BASE]);
+  }, []);
 
   const filteredUsers = useMemo(() => {
     let filtered = users.filter(

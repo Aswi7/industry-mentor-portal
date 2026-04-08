@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import axios from "axios";
+import API from "../../services/api";
 import { Bell, CheckCircle2, Calendar, X, Info } from "lucide-react";
 
 const NotificationDropdown = () => {
@@ -12,7 +12,7 @@ const NotificationDropdown = () => {
     try {
       const token = localStorage.getItem("token");
       if (!token) return;
-      const res = await axios.get("http://localhost:5000/api/notifications", {
+      const res = await API.get("/notifications", {
         headers: { Authorization: `Bearer ${token}` }
       });
       const notifs = res.data.notifications || [];
@@ -42,7 +42,7 @@ const NotificationDropdown = () => {
   const handleMarkAsRead = async () => {
     try {
       const token = localStorage.getItem("token");
-      await axios.put("http://localhost:5000/api/notifications/mark-as-read", {}, {
+      await API.put("/notifications/mark-as-read", {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setUnreadCount(0);

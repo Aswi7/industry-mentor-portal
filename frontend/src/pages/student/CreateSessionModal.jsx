@@ -1,9 +1,7 @@
 import { useState } from "react";
 import { 
   X, 
-  Calendar, 
   Clock, 
-  BookOpen, 
   Users, 
   CreditCard, 
   Tag, 
@@ -147,29 +145,23 @@ const CreateSessionModal = ({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-left">
               <div className="space-y-2 group">
                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] block ml-1">Schedule Date</label>
-                <div className="relative">
-                  <Calendar className="absolute left-5 top-1/2 -translate-y-1/2 text-blue-500" size={18} />
-                  <input
-                    type="date"
-                    value={date}
-                    onChange={(e) => setDate(e.target.value)}
-                    className="w-full pl-14 pr-6 py-4 bg-gray-50 border-2 border-transparent rounded-[1.5rem] focus:bg-white focus:border-blue-500 outline-none transition-all text-sm font-black shadow-inner group-hover:bg-gray-100/50"
-                    required
-                  />
-                </div>
+                <input
+                  type="date"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  className="w-full px-5 py-4 bg-gray-50 border-2 border-transparent rounded-[1.5rem] focus:bg-white focus:border-blue-500 outline-none transition-all text-sm font-black shadow-inner group-hover:bg-gray-100/50"
+                  required
+                />
               </div>
               <div className="space-y-2 group text-left">
                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] block ml-1">Kickoff Time</label>
-                <div className="relative">
-                  <Clock className="absolute left-5 top-1/2 -translate-y-1/2 text-blue-500" size={18} />
-                  <input
-                    type="time"
-                    value={time}
-                    onChange={(e) => setTime(e.target.value)}
-                    className="w-full pl-14 pr-6 py-4 bg-gray-50 border-2 border-transparent rounded-[1.5rem] focus:bg-white focus:border-blue-500 outline-none transition-all text-sm font-black shadow-inner group-hover:bg-gray-100/50"
-                    required
-                  />
-                </div>
+                <input
+                  type="time"
+                  value={time}
+                  onChange={(e) => setTime(e.target.value)}
+                  className="w-full px-5 py-4 bg-gray-50 border-2 border-transparent rounded-[1.5rem] focus:bg-white focus:border-blue-500 outline-none transition-all text-sm font-black shadow-inner group-hover:bg-gray-100/50"
+                  required
+                />
               </div>
             </div>
 

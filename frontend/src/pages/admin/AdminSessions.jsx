@@ -1,10 +1,8 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import API from "../../services/api";
 import { Calendar, Clock, Filter, Search, MoreHorizontal, AlertCircle, Inbox, Tag } from "lucide-react";
 
 const AdminSessions = () => {
-  const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
-  
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -16,7 +14,7 @@ const AdminSessions = () => {
       try {
         const token = localStorage.getItem("token");
         const headers = { Authorization: `Bearer ${token}` };
-        const res = await axios.get(`${API_BASE}/api/admin/sessions`, { headers });
+        const res = await API.get("/admin/sessions", { headers });
         setSessions(res.data.sessions || []);
       } catch (err) {
         console.error(err);
@@ -27,7 +25,7 @@ const AdminSessions = () => {
     };
 
     fetchSessions();
-  }, [API_BASE]);
+  }, []);
 
   const normalizeStatus = (status) => {
     if (status === "COMPLETED") return "COMPLETED";

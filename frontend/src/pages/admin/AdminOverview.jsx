@@ -1,11 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
-import axios from "axios";
+import API from "../../services/api";
 import { Users, UserCheck, Calendar, BarChart3, TrendingUp, AlertCircle } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend, CartesianGrid } from "recharts";
 import { useTheme } from "../../context/ThemeContext";
 
 const AdminOverview = () => {
-  const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
   const { isDarkMode } = useTheme();
 
   const [users, setUsers] = useState([]);
@@ -19,8 +18,8 @@ const AdminOverview = () => {
         const token = localStorage.getItem("token");
         const headers = token ? { Authorization: `Bearer ${token}` } : {};
         const [usersRes, sessionsRes] = await Promise.all([
-          axios.get(`${API_BASE}/api/admin/users`, { headers }),
-          axios.get(`${API_BASE}/api/admin/sessions`, { headers }),
+          API.get("/admin/users", { headers }),
+          API.get("/admin/sessions", { headers }),
         ]);
 
         setUsers(usersRes.data.users || []);
@@ -34,7 +33,7 @@ const AdminOverview = () => {
     };
 
     fetchOverview();
-  }, [API_BASE]);
+  }, []);
 
   const sessionData = useMemo(() => {
     const counts = { completed: 0, upcoming: 0, pending: 0, cancelled: 0 };

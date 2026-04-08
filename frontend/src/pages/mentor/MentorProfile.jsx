@@ -8,6 +8,7 @@ import {
   Mail, 
   Camera, 
   Globe, 
+  Linkedin,
   Plus,
   ChevronRight,
   CheckCircle,
@@ -60,6 +61,8 @@ export default function MentorProfile() {
   const [domain, setDomain] = useState(() => storedUser.domain ?? "");
   const [bio, setBio] = useState(() => storedUser.bio ?? "");
   const [phone, setPhone] = useState(() => storedUser.phone ?? "");
+  const [linkedinUrl, setLinkedinUrl] = useState(() => storedUser.linkedinUrl ?? "");
+  const [xUrl, setXUrl] = useState(() => storedUser.xUrl ?? "");
 
   const [profileFile, setProfileFile] = useState(null);
   const [profilePreview, setProfilePreview] = useState("");
@@ -97,6 +100,8 @@ export default function MentorProfile() {
         setDomain(current.domain ?? stored.domain ?? "");
         setBio(current.bio ?? stored.bio ?? "");
         setPhone(current.phone ?? stored.phone ?? "");
+        setLinkedinUrl(current.linkedinUrl ?? stored.linkedinUrl ?? "");
+        setXUrl(current.xUrl ?? stored.xUrl ?? "");
         localStorage.setItem("user", JSON.stringify(merged));
       } catch (err) {
         console.error(err);
@@ -158,6 +163,8 @@ export default function MentorProfile() {
         bio,
         domain,
         skills,
+        linkedinUrl,
+        xUrl,
       };
 
       const res = await API.put("/mentor/profile", payload, { headers });
@@ -282,7 +289,7 @@ export default function MentorProfile() {
                     <div className="relative group">
                       {profilePreview || mentor.profilePicture ? (
                         <img
-                          src={profilePreview || `http://localhost:5000${mentor.profilePicture}`}
+                          src={profilePreview || `${API_BASE}${mentor.profilePicture}`}
                           alt="Profile"
                           className="w-32 h-32 rounded-[2.5rem] object-cover border-4 border-white dark:border-dark-border shadow-xl group-hover:opacity-90 transition-all"
                         />
@@ -355,6 +362,34 @@ export default function MentorProfile() {
                           value={domain}
                           onChange={(e) => setDomain(e.target.value)}
                           placeholder="Web Dev, AI, Product..."
+                          className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 dark:border-dark-border bg-white dark:bg-dark-bg text-slate-700 dark:text-dark-text focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium"
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-slate-700 dark:text-dark-text uppercase tracking-wider flex items-center gap-1.5 ml-1">
+                        LinkedIn Profile
+                      </label>
+                      <div className="relative">
+                        <Linkedin className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                        <input
+                          value={linkedinUrl}
+                          onChange={(e) => setLinkedinUrl(e.target.value)}
+                          placeholder="https://linkedin.com/in/your-profile"
+                          className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 dark:border-dark-border bg-white dark:bg-dark-bg text-slate-700 dark:text-dark-text focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium"
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-slate-700 dark:text-dark-text uppercase tracking-wider flex items-center gap-1.5 ml-1">
+                        X Profile
+                      </label>
+                      <div className="relative">
+                        <Globe className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                        <input
+                          value={xUrl}
+                          onChange={(e) => setXUrl(e.target.value)}
+                          placeholder="https://x.com/your-handle"
                           className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 dark:border-dark-border bg-white dark:bg-dark-bg text-slate-700 dark:text-dark-text focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium"
                         />
                       </div>

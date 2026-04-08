@@ -1,11 +1,10 @@
 import { Users, Calendar, Clock, CheckCircle, ArrowUpRight, MoreHorizontal, AlertCircle, X } from "lucide-react";
 import { useState, useEffect } from "react";
-import axios from "axios";
+import API from "../../services/api";
 import { useNavigate } from "react-router-dom";
 
 export default function MentorOverview() {
   const navigate = useNavigate();
-  const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
   
   const [mentorName, setMentorName] = useState("");
   const [stats, setStats] = useState({ mentees: 0, upcoming: 0, pending: 0, completed: 0 });
@@ -22,17 +21,17 @@ export default function MentorOverview() {
       const headers = { Authorization: `Bearer ${token}` };
 
       const [profileRes, statsRes, requestsRes, sessionsRes] = await Promise.all([
-        axios.get(`${API_BASE}/api/mentor/profile`, { headers }),
-        axios.get(`${API_BASE}/api/mentor/stats`, { headers }),
-        axios.get(`${API_BASE}/api/mentor/pending-requests`, { headers }),
-        axios.get(`${API_BASE}/api/mentor/sessions`, { headers })
+        API.get("/mentor/profile", { headers }),
+        API.get("/mentor/stats", { headers }),
+        API.get("/mentor/pending-requests", { headers }),
+        API.get("/mentor/sessions", { headers })
       ]);
 
       setMentorName(profileRes.data.mentor.name);
       setStats(statsRes.data.stats);
       setPendingRequests((requestsRes.data.pendingRequests || []).slice(0, 5));
 
-      const upcoming = sessionsRes.data.sessions
+      const upcoming = (sessionsRes.data.sessions || [])
         .filter((s) => s.status === "OPEN" || s.status === "ACCEPTED")
         .sort((a, b) => new Date(a.startsAt) - new Date(b.startsAt))
         .slice(0, 5);
@@ -48,7 +47,7 @@ export default function MentorOverview() {
 
   useEffect(() => {
     fetchData();
-  }, [API_BASE]);
+  }, []);
 
   useEffect(() => {
     const timer = setInterval(() => setNowTs(Date.now()), 60000);
@@ -61,7 +60,7 @@ export default function MentorOverview() {
       const headers = { Authorization: `Bearer ${token}` };
       setActioningId(sessionId);
 
-      await axios.put(`${API_BASE}/api/sessions/${action}/${sessionId}`, {}, { headers });
+      await API.put(`/sessions/${action}/${sessionId}`, {}, { headers });
       await fetchData();
       window.dispatchEvent(new Event("sessionChanged"));
     } catch (err) {

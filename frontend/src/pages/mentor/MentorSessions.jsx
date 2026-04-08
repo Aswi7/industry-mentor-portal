@@ -1,7 +1,9 @@
 import { Users, Plus, Calendar, Clock, Video, XCircle, CheckCircle, ExternalLink } from "lucide-react";
 import { useState, useEffect } from "react";
-import axios from "axios";
+import API from "../../services/api";
 import CreateSessionModal from "../student/CreateSessionModal";
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
 
 const MentorSessions = () => {
   
@@ -17,7 +19,7 @@ const MentorSessions = () => {
     try {
       const token = localStorage.getItem("token");
       const headers = { Authorization: `Bearer ${token}` };
-      const meRes = await axios.get("http://localhost:5000/api/auth/me", { headers });
+      const meRes = await API.get("/auth/me", { headers });
       const latestUser = meRes.data?.user;
       if (latestUser) {
         setIsCalendarConnected(Boolean(latestUser.googleCalendarConnectedAt || latestUser.googleRefreshToken));
@@ -33,7 +35,7 @@ const MentorSessions = () => {
       const token = localStorage.getItem("token");
       const headers = { Authorization: `Bearer ${token}` };
 
-      const res = await axios.get("http://localhost:5000/api/mentor/sessions", { headers });
+      const res = await API.get("/mentor/sessions", { headers });
       const allSessions = (res.data.sessions || []).filter(
         (session) => session.status !== "REQUESTED" && session.status !== "REJECTED"
       );
@@ -111,7 +113,7 @@ const MentorSessions = () => {
     try {
       const token = localStorage.getItem("token");
       const headers = { Authorization: `Bearer ${token}` };
-      const res = await axios.post(`http://localhost:5000/api/sessions/refresh-link/${session._id}`, {}, { headers });
+      const res = await API.post(`/sessions/refresh-link/${session._id}`, {}, { headers });
       
       if (res.data.session?.meetingLink) {
         window.open(res.data.session.meetingLink, "_blank");
@@ -135,7 +137,7 @@ const MentorSessions = () => {
     try {
       const token = localStorage.getItem("token");
       const headers = { Authorization: `Bearer ${token}` };
-      await axios.post(`http://localhost:5000/api/sessions/refresh-link/${sessionId}`, {}, { headers });
+      await API.post(`/sessions/refresh-link/${sessionId}`, {}, { headers });
       await fetchSessions();
     } catch (err) {
       console.error(err);
@@ -145,7 +147,7 @@ const MentorSessions = () => {
 
   const handleConnectCalendar = () => {
     const token = localStorage.getItem("token");
-    window.location.href = `http://localhost:5000/api/auth/google/calendar?token=${token}&next=/mentor/sessions`;
+    window.location.href = `${API_BASE}/api/auth/google/calendar?token=${token}&next=/mentor/sessions`;
   };
 
   const handleCancelSession = async (sessionId) => {
@@ -153,7 +155,7 @@ const MentorSessions = () => {
     try {
       const token = localStorage.getItem("token");
       const headers = { Authorization: `Bearer ${token}` };
-      await axios.delete(`http://localhost:5000/api/sessions/mentor-cancel/${sessionId}`, { headers });
+      await API.delete(`/sessions/mentor-cancel/${sessionId}`, { headers });
       await fetchSessions();
     } catch (err) {
       console.error(err);
@@ -338,8 +340,8 @@ const MentorSessions = () => {
               const localEnd = new Date(localStart.getTime() + durationMin * 60 * 1000);
               const token = localStorage.getItem("token");
               const headers = { Authorization: `Bearer ${token}` };
-              await axios.post(
-                "http://localhost:5000/api/sessions/mentor-create",
+              await API.post(
+                "/sessions/mentor-create",
                 {
                   topic: data.title,
                   startsAt: localStart.toISOString(),

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import axios from "axios";
+import API from "../../services/api";
 import {
   BarChart,
   Bar,
@@ -16,7 +16,6 @@ import { TrendingUp, BarChart3, Users, Calendar, CheckCircle, AlertCircle, FileT
 import { useTheme } from "../../context/ThemeContext";
 
 const AdminReports = () => {
-  const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
   const { isDarkMode } = useTheme();
 
   const [users, setUsers] = useState([]);
@@ -31,8 +30,8 @@ const AdminReports = () => {
         const headers = { Authorization: `Bearer ${token}` };
 
         const [usersRes, sessionsRes] = await Promise.all([
-          axios.get(`${API_BASE}/api/admin/users`, { headers }),
-          axios.get(`${API_BASE}/api/admin/sessions`, { headers }),
+          API.get("/admin/users", { headers }),
+          API.get("/admin/sessions", { headers }),
         ]);
 
         setUsers(usersRes.data.users || []);
@@ -46,7 +45,7 @@ const AdminReports = () => {
     };
 
     fetchReportsData();
-  }, [API_BASE]);
+  }, []);
 
   const topicData = useMemo(() => {
     const counts = sessions.reduce((acc, session) => {

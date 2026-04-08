@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import API from "../../services/api";
 import { Check, Eye, X, UserCheck, AlertCircle, Inbox } from "lucide-react";
 
 const getInitials = (name = "") =>
@@ -24,7 +24,7 @@ const AdminApprovals = () => {
       try {
         const token = localStorage.getItem("token");
         const headers = { Authorization: `Bearer ${token}` };
-        const res = await axios.get(`${API_BASE}/api/admin/mentors/pending`, { headers });
+        const res = await API.get("/admin/mentors/pending", { headers });
         setMentors(res.data.pendingMentors || []);
       } catch (err) {
         console.error(err);
@@ -35,7 +35,7 @@ const AdminApprovals = () => {
     };
 
     fetchPendingMentors();
-  }, [API_BASE]);
+  }, []);
 
   const handleAction = async (mentorId, action) => {
     try {
@@ -43,7 +43,7 @@ const AdminApprovals = () => {
       const token = localStorage.getItem("token");
       const headers = { Authorization: `Bearer ${token}` };
 
-      await axios.put(`${API_BASE}/api/admin/mentors/${action}/${mentorId}`, {}, { headers });
+      await API.put(`/admin/mentors/${action}/${mentorId}`, {}, { headers });
       setMentors((prev) => prev.filter((mentor) => mentor._id !== mentorId));
       setSelectedMentor(null);
     } catch (err) {

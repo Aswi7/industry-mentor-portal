@@ -6,10 +6,12 @@ import {
   Mail, 
   Lock, 
   Phone, 
+  Linkedin,
   GraduationCap, 
   ShieldCheck, 
   ArrowRight,
   CheckCircle2,
+  Globe,
 } from "lucide-react";
 
 function Register() {
@@ -25,6 +27,8 @@ function Register() {
   
   const [skillInput, setSkillInput] = useState("");
   const [domain, setDomain] = useState("");
+  const [linkedinUrl, setLinkedinUrl] = useState("");
+  const [xUrl, setXUrl] = useState("");
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -41,6 +45,10 @@ function Register() {
         email,
         phone,
         password,
+        ...(role.toUpperCase() === "MENTOR" && {
+          linkedinUrl,
+          xUrl,
+        }),
         ...(role.toUpperCase() === "STUDENT" && { 
           studentSkills: skillInput.split(",").map((s) => s.trim()).filter(Boolean),
           studentDomain: domain
@@ -196,6 +204,38 @@ function Register() {
                 />
               </div>
             </div>
+
+            {role === "MENTOR" && (
+              <>
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-slate-700 uppercase tracking-widest ml-1">LinkedIn Profile</label>
+                  <div className="relative group">
+                    <Linkedin className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500" size={18} />
+                    <input
+                      type="url"
+                      placeholder="https://linkedin.com/in/your-profile"
+                      className="w-full pl-12 pr-4 py-3.5 rounded-2xl border border-slate-200 bg-slate-50/30 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-medium"
+                      value={linkedinUrl}
+                      onChange={(e) => setLinkedinUrl(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-slate-700 uppercase tracking-widest ml-1">X Profile</label>
+                  <div className="relative group">
+                    <Globe className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500" size={18} />
+                    <input
+                      type="url"
+                      placeholder="https://x.com/your-handle"
+                      className="w-full pl-12 pr-4 py-3.5 rounded-2xl border border-slate-200 bg-slate-50/30 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-medium"
+                      value={xUrl}
+                      onChange={(e) => setXUrl(e.target.value)}
+                    />
+                  </div>
+                </div>
+              </>
+            )}
 
             {role === "STUDENT" && (
               <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-slate-50 rounded-[2rem] border border-slate-100">

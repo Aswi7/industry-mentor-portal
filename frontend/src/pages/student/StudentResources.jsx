@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import axios from "axios"
+import API from "../../services/api"
 
 const StudentResources = () => {
 
@@ -28,8 +28,8 @@ const StudentResources = () => {
         return;
       }
 
-      const response = await axios.get(
-        `http://localhost:5000/api/resources/${resource._id}/download`,
+      const response = await API.get(
+        `/resources/${resource._id}/download`,
         {
           headers: { Authorization: `Bearer ${token}` },
           responseType: "blob"
@@ -52,8 +52,8 @@ const StudentResources = () => {
 
   useEffect(() => {
     const fetchResources = async () => {
-      const { data } = await axios.get(
-        "http://localhost:5000/api/resources",
+      const { data } = await API.get(
+        "/resources",
         {
           headers: { Authorization: `Bearer ${token}` }
         }

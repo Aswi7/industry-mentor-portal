@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
-import axios from "axios";
-import { X, Clock, Globe, Eye } from "lucide-react";
+import API from "../../services/api";
+import { X, Clock, Globe, Eye, Calendar } from "lucide-react";
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
 
 const MentorDetailsModal = ({ mentor, onClose }) => {
   if (!mentor) return null;
@@ -19,7 +21,7 @@ const MentorDetailsModal = ({ mentor, onClose }) => {
           <div className="flex items-center gap-6 mb-8">
             {mentor.profilePicture ? (
               <img
-                src={`http://localhost:5000${mentor.profilePicture}`}
+                src={`${API_BASE}${mentor.profilePicture}`}
                 alt={`${mentor.name} profile`}
                 className="w-20 h-20 rounded-full object-cover shadow-inner border border-blue-100"
               />
@@ -118,8 +120,8 @@ export default function FindMentor() {
       const headers = { Authorization: `Bearer ${token}` };
 
       const [openRes, myRes] = await Promise.all([
-        axios.get("http://localhost:5000/api/sessions/open", { headers }),
-        axios.get("http://localhost:5000/api/student/sessions", { headers }),
+        API.get("/sessions/open", { headers }),
+        API.get("/student/sessions", { headers }),
       ]);
 
       const openSessions = openRes.data.sessions || [];
@@ -176,8 +178,8 @@ export default function FindMentor() {
       const token = localStorage.getItem("token");
       const headers = { Authorization: `Bearer ${token}` };
 
-      await axios.post(
-        "http://localhost:5000/api/sessions/request",
+      await API.post(
+        "/sessions/request",
         { sessionId },
         { headers }
       );
@@ -195,7 +197,7 @@ export default function FindMentor() {
   const handleCancelRequest = async (sessionId) => {
     try {
       const token = localStorage.getItem("token");
-      await axios.delete(`http://localhost:5000/api/sessions/cancel/${sessionId}`, {
+      await API.delete(`/sessions/cancel/${sessionId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       window.dispatchEvent(new Event("sessionChanged"));
@@ -205,6 +207,34 @@ export default function FindMentor() {
       console.error(err);
       alert(err.response?.data?.message || "Failed to cancel request");
     }
+  };
+
+  const getScheduleDate = (session) => {
+    if (!session?.startsAt) return "Date not set";
+    const start = new Date(session.startsAt);
+    if (Number.isNaN(start.getTime())) return "Date not set";
+    return start.toLocaleDateString(undefined, {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+  };
+
+  const getScheduleTime = (session) => {
+    if (!session?.startsAt) return "Time not set";
+    const start = new Date(session.startsAt);
+    if (Number.isNaN(start.getTime())) return "Time not set";
+
+    if (!session?.endsAt) {
+      return start.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    }
+
+    const end = new Date(session.endsAt);
+    if (Number.isNaN(end.getTime())) {
+      return start.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    }
+
+    return `${start.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} - ${end.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
   };
 
   return (
@@ -293,6 +323,19 @@ export default function FindMentor() {
                   <span className="font-semibold text-gray-700">Experience:</span> {session.mentor.yearsOfExperience} years
                 </p>
               ) : null}
+
+              <div className="mb-4 space-y-2 rounded-xl bg-slate-50 border border-slate-100 p-3">
+                <div className="flex items-center gap-2 text-sm text-gray-700">
+                  <Calendar size={16} className="text-blue-500" />
+                  <span className="font-semibold">Date:</span>
+                  <span>{getScheduleDate(session)}</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-gray-700">
+                  <Clock size={16} className="text-blue-500" />
+                  <span className="font-semibold">Time:</span>
+                  <span>{getScheduleTime(session)}</span>
+                </div>
+              </div>
 
               <div className="flex flex-wrap gap-2 mb-4">
                 {session.mentor?.skills && session.mentor.skills.length > 0 ? (

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
-import axios from "axios"
+import API from "../../services/api"
+const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
 import { 
   BookOpen, 
   FileText, 
@@ -31,8 +32,8 @@ export default function MentorResources() {
 
   const fetchResources = async () => {
     try {
-      const { data } = await axios.get(
-        "http://localhost:5000/api/resources",
+      const { data } = await API.get(
+        "/resources",
         {
           headers: {
             Authorization: `Bearer ${token}`
@@ -73,8 +74,8 @@ export default function MentorResources() {
         if (file) formData.append("file", file)
       }
 
-      await axios.post(
-        "http://localhost:5000/api/resources",
+      await API.post(
+        "/resources",
         formData,
         {
           headers: {
@@ -109,7 +110,7 @@ export default function MentorResources() {
       const confirmed = window.confirm("Delete this resource?");
       if (!confirmed) return;
 
-      await axios.delete(`http://localhost:5000/api/resources/${resourceId}`, {
+      await API.delete(`/resources/${resourceId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -348,7 +349,7 @@ function ResourceCard({ resource, onDelete }) {
 
   const openResource = () => {
     if (resource.fileUrl) {
-      window.open(`http://localhost:5000${resource.fileUrl}`, "_blank")
+      window.open(`${API_BASE}${resource.fileUrl}`, "_blank")
     } else if (resource.link) {
       window.open(resource.link, "_blank")
     }
