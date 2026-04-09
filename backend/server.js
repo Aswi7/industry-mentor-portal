@@ -2,6 +2,10 @@ const cors = require("cors");
 const express = require("express");
 const mongoose = require("mongoose");
 const path = require("path");
+const dns = require("dns");
+
+// Force Google DNS to resolve MongoDB SRV records
+dns.setServers(["8.8.8.8", "8.8.4.4"]);
 
 require("dotenv").config();
 
