@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import API from "../../services/api";
 import CreateSessionModal from "../student/CreateSessionModal";
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+const API_BASE = import.meta.env.PROD ? "" : (import.meta.env.VITE_API_BASE_URL || "http://localhost:5000");
 
 const MentorSessions = () => {
   
