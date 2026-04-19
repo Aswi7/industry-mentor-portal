@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+const mongoose = require("../lib/mongoose");
 
 const notificationSchema = new mongoose.Schema({
   recipient: {

@@ -1,33 +1,28 @@
 const cors = require("cors");
 const express = require("express");
-const mongoose = require("mongoose");
+const mongoose = require("./backend/lib/mongoose");
 const path = require("path");
 const dns = require("dns");
 
-// Force Google DNS to resolve MongoDB SRV records
 dns.setServers(["8.8.8.8", "8.8.4.4"]);
 
-require("dotenv").config();
+require("dotenv").config({ path: path.join(__dirname, ".env") });
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// 1️⃣ Middleware
 app.use(express.json());
 app.use(cors());
-
-// 2️⃣ Routes
 
 const authRoutes = require("./backend/routes/auth");
 const testRoutes = require("./backend/routes/testRoutes");
 const adminRoutes = require("./backend/routes/adminRoutes");
 const mentorRoutes = require("./backend/routes/mentorRoutes");
-const studentRoutes = require("./backend/routes/studentRoutes"); 
+const studentRoutes = require("./backend/routes/studentRoutes");
 const sessionRoutes = require("./backend/routes/sessionRoutes");
 const resourceRoutes = require("./backend/routes/resourceRoutes");
 const notificationRoutes = require("./backend/routes/notificationRoutes");
 const { markExpiredSessionsAsCompleted } = require("./backend/services/sessionStatus");
-// ✅ ADD THIS
 
 app.use("/api/auth", authRoutes);
 app.use("/api/test", testRoutes);
@@ -38,20 +33,17 @@ app.use("/api/sessions", sessionRoutes);
 app.use("/api/resources", resourceRoutes);
 app.use("/api/notifications", notificationRoutes);
 
-app.use("/uploads", express.static("uploads")); // ✅ ADD THIS
+app.use("/uploads", express.static(path.join(__dirname, "backend", "uploads")));
 
-// 3️⃣ Test route
 app.get("/", (req, res) => {
-  res.send("Backend is running successfully 🚀");
+  res.send("Backend is running successfully");
 });
 
-// 4️⃣ MongoDB connection
 mongoose
   .connect(process.env.MONGO_URI)
   .then(async () => {
     console.log("MongoDB connected successfully");
 
-    // Auto-complete sessions once they pass their scheduled end time.
     const intervalMs = Number(process.env.SESSION_AUTO_COMPLETE_INTERVAL_MS || 60000);
     if (intervalMs > 0) {
       try {
@@ -71,11 +63,14 @@ mongoose
       timer.unref?.();
     }
   })
-  .catch((err) =>
-    console.error("❌ MongoDB connection error:", err.message)
-  );
+  .catch((err) => {
+    console.error("MongoDB connection error:", err.message);
+  });
 
-// 5️⃣ Start server (LAST)
-app.listen(PORT, () => {
-  console.log(`🚀 Backend running on port ${PORT}`);
-});
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => {
+    console.log(`Backend running on port ${PORT}`);
+  });
+}
+
+module.exports = app;
