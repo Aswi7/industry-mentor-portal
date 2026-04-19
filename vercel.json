@@ -20,15 +20,15 @@
     },
     {
       "source": "/(assets/.*)",
-      "destination": "/frontend/dist/$1"
+      "destination": "/frontend/$1"
     },
     {
       "source": "/([^/]+\\.[a-z0-9]+)",
-      "destination": "/frontend/dist/$1"
+      "destination": "/frontend/$1"
     },
     {
       "source": "/(.*)",
-      "destination": "/frontend/dist/index.html"
+      "destination": "/frontend/index.html"
     }
   ]
 }
