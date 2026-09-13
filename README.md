@@ -247,10 +247,3 @@ The project is structured for easy deployment on **Vercel** or any cloud hosting
 2. Push your code to GitHub.
 3. Import the project in Vercel Dashboard.
 4. Configure the environment variables (`MONGO_URI`, `JWT_SECRET`, `FRONTEND_URL`) under Project Settings -> Environment Variables.
-5. Deploy! Vercel handles serving the static frontend assets and routing `/api/*` calls to `server.js`.
-
----
-
-## 📄 License
-
-This project is licensed under the [ISC License](LICENSE).
