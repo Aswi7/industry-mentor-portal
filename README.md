@@ -4,26 +4,6 @@
 
 ---
 
-## 📌 Table of Contents
-
-- [Overview](#-overview)
-- [Key Features](#-key-features)
-  - [👨‍🎓 Student Features](#-student-features)
-  - [👨‍🏫 Mentor Features](#-mentor-features)
-  - [🛡️ Admin Features](#-admin-features)
-  - [🔐 Auth & Security](#-auth--security)
-- [Tech Stack](#-tech-stack)
-- [Project Architecture & Directory Structure](#-project-architecture--directory-structure)
-- [Getting Started & Local Setup](#-getting-started--local-setup)
-  - [Prerequisites](#prerequisites)
-  - [Installation Steps](#installation-steps)
-  - [Environment Variables](#environment-variables)
-  - [Running Locally](#running-locally)
-- [API Endpoints Reference](#-api-endpoints-reference)
-- [Deployment](#-deployment)
-- [License](#-license)
-
----
 
 ## 🌟 Overview
 
