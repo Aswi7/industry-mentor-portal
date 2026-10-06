@@ -120,7 +120,7 @@ function Login() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 placeholder="name@example.com"
-                className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-100 dark:border-dark-border bg-gray-50/50 dark:bg-gray-900/20 focus:bg-white dark:focus:bg-dark-card focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none transition-all font-medium text-sm dark:text-dark-text"
+                className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-100 dark:border-dark-border bg-gray-50/50 dark:bg-gray-900/50 focus:bg-white dark:focus:bg-dark-card focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none transition-all font-medium text-sm text-gray-900 dark:text-dark-text placeholder-gray-400 dark:placeholder-gray-500"
               />
             </div>
           </div>
@@ -144,7 +144,7 @@ function Login() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 placeholder="••••••••"
-                className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-100 dark:border-dark-border bg-gray-50/50 dark:bg-gray-900/20 focus:bg-white dark:focus:bg-dark-card focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none transition-all font-medium text-sm dark:text-dark-text"
+                className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-100 dark:border-dark-border bg-gray-50/50 dark:bg-gray-900/50 focus:bg-white dark:focus:bg-dark-card focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 outline-none transition-all font-medium text-sm text-gray-900 dark:text-dark-text placeholder-gray-400 dark:placeholder-gray-500"
               />
             </div>
           </div>

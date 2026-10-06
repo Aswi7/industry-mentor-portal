@@ -25,11 +25,30 @@
   input, select, textarea {
     @apply w-full px-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm 
            focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none 
-           transition-all duration-200;
+           transition-all duration-200 text-gray-900 placeholder-gray-400;
   }
 
   .dark input, .dark select, .dark textarea {
-    @apply bg-dark-card border-dark-border text-dark-text focus:ring-primary-500/40;
+    @apply bg-dark-card border-dark-border text-dark-text placeholder-gray-500 focus:ring-primary-500/40;
+  }
+
+  /* Browser Autofill compatibility */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover, 
+  input:-webkit-autofill:focus, 
+  input:-webkit-autofill:active {
+    -webkit-text-fill-color: #0f172a !important;
+    -webkit-box-shadow: 0 0 0px 1000px #ffffff inset !important;
+    transition: background-color 50000s ease-in-out 0s;
+  }
+
+  .dark input:-webkit-autofill,
+  .dark input:-webkit-autofill:hover, 
+  .dark input:-webkit-autofill:focus, 
+  .dark input:-webkit-autofill:active {
+    -webkit-text-fill-color: #F9FAFB !important;
+    -webkit-box-shadow: 0 0 0px 1000px #1F2937 inset !important;
+    transition: background-color 50000s ease-in-out 0s;
   }
 }
 
